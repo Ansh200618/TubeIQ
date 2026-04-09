@@ -593,6 +593,8 @@ const CAT_LABEL = {'1':'Film & Animation','2':'Autos','10':'Music','15':'Pets & 
 const MIN_VIDEOS_FOR_FULL_CONFIDENCE = 20;
 const MIN_VIDEOS_FOR_RULE_MINING = 2;
 const MSG_NO_RULE_DATA = 'Not enough data to mine association rules.';
+const UNKNOWN_NICHE_META = {icon:'❓',tags:['Not enough video data for niche tags']};
+const MSG_REC_UNAVAILABLE = 'Recommendation generation is unavailable right now. No predefined templates are used; please try again.';
 
 // ── App State ──
 let charts = {};
@@ -833,7 +835,7 @@ function renderDashboard(data){
     <div class="kpi-change ${k.cls}">${k.change}</div></div>`).join('');
 
   // Niche
-  const n=NICHES[data.niche]||{icon:'❓',tags:['Not enough video data for niche tags']};
+  const n=NICHES[data.niche]||UNKNOWN_NICHE_META;
   document.getElementById('nicheIcon').textContent=n.icon;
   document.getElementById('nicheName').textContent=data.niche.toUpperCase();
   document.getElementById('nicheConf').textContent=data.confidence!==null
@@ -970,7 +972,7 @@ Respond ONLY in valid JSON, no markdown, no explanation. Format:
     const recs=JSON.parse(raw.replace(/```json|```/g,'').trim());
     renderRecCards(recs);
   }catch(e){
-    document.getElementById('recResults').innerHTML='<p style="color:var(--muted);font-family:DM Mono,monospace;font-size:13px">Recommendation generation is unavailable right now. No predefined templates are used; please try again.</p>';
+    document.getElementById('recResults').innerHTML=`<p style="color:var(--muted);font-family:DM Mono,monospace;font-size:13px">${MSG_REC_UNAVAILABLE}</p>`;
   }
   btn.disabled=false;btn.textContent='GENERATE FULL VIDEO PACKAGE →';
 }
