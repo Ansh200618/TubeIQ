@@ -590,6 +590,9 @@ const CAT_NICHE = {'1':'Entertainment','2':'Travel & Lifestyle','10':'Music','15
 const CAT_LABEL = {'1':'Film & Animation','2':'Autos','10':'Music','15':'Pets & Animals','17':'Sports',
   '19':'Travel','20':'Gaming','22':'Vlogs','23':'Comedy','24':'Entertainment','25':'News',
   '26':'Howto & Style','27':'Education','28':'Science & Tech','29':'Nonprofits'};
+const MIN_VIDEOS_FOR_FULL_CONFIDENCE = 20;
+const MIN_VIDEOS_FOR_RULE_MINING = 2;
+const MSG_NO_RULE_DATA = 'Not enough data to mine association rules.';
 
 // ── App State ──
 let charts = {};
@@ -653,7 +656,7 @@ function detectNiche(videos){
   const s=Object.entries(t).sort((a,b)=>b[1]-a[1]);
   if(!s.length)return{niche:'Unknown',confidence:null};
   const dominance=s[0][1]/videos.length;
-  const sampleFactor=Math.min(1,videos.length/20);
+  const sampleFactor=Math.min(1,videos.length/MIN_VIDEOS_FOR_FULL_CONFIDENCE);
   return{niche:s[0][0],confidence:Math.round(dominance*sampleFactor*100)};
 }
 function buildContentMix(videos){
@@ -700,7 +703,7 @@ function buildMonthlyChart(videos){
   return{labels:keys.map(k=>M[parseInt(k.split('-')[1])]),viewsData:keys.map(k=>bk[k].views),likesData:keys.map(k=>bk[k].likes)};
 }
 function mineAprioriRules(videos){
-  if(videos.length<2)return[];
+  if(videos.length<MIN_VIDEOS_FOR_RULE_MINING)return[];
   const avg=calcAvgEngagement(videos)||0.01;
   const P=[
     {l:'numbered_title',  f:v=>/\d+/.test(v.snippet.title)},
@@ -844,7 +847,7 @@ function renderDashboard(data){
   document.getElementById('ruleList').innerHTML=data.aprioriRules.length?data.aprioriRules.map(r=>
     `<div class="rule-item"><div class="rule-expr"><span class="bold">{${r.ant}}</span><span class="arrow">⟹</span><span class="bold">{${r.con}}</span></div>
     <div class="rule-conf">conf: ${r.conf.toFixed(2)}</div><div class="rule-lift">lift: ${r.lift.toFixed(1)}</div></div>`).join('')
-    :'<div class="rule-item" role="status" aria-live="polite"><div class="rule-expr">Not enough data to mine association rules.</div></div>';
+    :`<div class="rule-item" role="status" aria-live="polite"><div class="rule-expr">${MSG_NO_RULE_DATA}</div></div>`;
 
   // Recommendations panel — ONLY for owner's own channel
   const rp=document.getElementById('recPanel');
