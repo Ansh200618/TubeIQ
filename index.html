@@ -515,7 +515,7 @@ footer span{color:var(--red)}
     <div class="chat-head-avatar">🤖</div>
     <div class="chat-head-info">
       <h4>TubeIQ AI ADVISOR</h4>
-      <p id="chatStatusLine">● ONLINE · POWERED BY CLAUDE</p>
+      <p id="chatStatusLine">● ONLINE · POWERED BY GEMINI</p>
     </div>
     <button class="chat-close" onclick="toggleChat()">✕</button>
   </div>
@@ -555,7 +555,7 @@ footer span{color:var(--red)}
   </div>
 </div>
 
-<footer>TubeIQ · YouTube Channel Intelligence · Built with <span>♥</span> using Weka · Apriori · Claude AI · YouTube Data API v3</footer>
+<footer>TubeIQ · YouTube Channel Intelligence · Built with <span>♥</span> using Weka · Apriori · Gemini AI · YouTube Data API v3</footer>
 
 <script>
 /* ══════════════════════════════════════════════════
@@ -568,9 +568,8 @@ const API_KEY = 'AIzaSyAY6dcunw97THYJ42Y6VuCckOjlUP05Fpc';
 // 2. Google OAuth Client ID — get from console.cloud.google.com
 //    Replace with your own, then Google Login will work
 const G_CLIENT = '574845010481-hiu0cmuml49cv869uupfgefcd69enbkp.apps.googleusercontent.com';
-// 3. Anthropic API key for the AI chatbot
-//    Get from console.anthropic.com — used in chatbot only
-const ANTH_KEY = 'YOUR_ANTHROPIC_API_KEY';
+// 3. Gemini AI is used for the chatbot and recommendations.
+//    It reuses the same API_KEY above (enable "Generative Language API" in GCP console).
 // ──────────────────────────────────────────────────
 
 const YT = 'https://www.googleapis.com/youtube/v3';
@@ -938,13 +937,13 @@ Respond ONLY in valid JSON, no markdown, no explanation. Format:
 ]`;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':ANTH_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:2000}})
     });
     const j=await res.json();
-    const raw=j.content?.[0]?.text||'[]';
+    const raw=j.candidates?.[0]?.content?.parts?.[0]?.text||'[]';
     const recs=JSON.parse(raw.replace(/```json|```/g,'').trim());
     renderRecCards(recs);
   }catch(e){
@@ -1078,17 +1077,18 @@ Be concise (3-5 sentences). Use **bold** for key points. No bullet lists.`
   :'You are TubeIQ AI, a YouTube growth expert. Give brief actionable advice.';
   showTyping(true);
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const msgs=chatHistory.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':ANTH_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:350,system:sys,messages:chatHistory})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:msgs,generationConfig:{maxOutputTokens:350}})
     });
     const j=await res.json();
-    const reply=j.content?.[0]?.text||"I couldn't get a response. Please try again.";
+    const reply=j.candidates?.[0]?.content?.parts?.[0]?.text||"I couldn't get a response. Please try again.";
     chatHistory.push({role:'assistant',content:reply});showTyping(false);addBotMsg(reply);
   }catch(e){
     showTyping(false);
-    addBotMsg(d?`**Quick insight:** Your **${d.engRate}%** engagement is ${parseFloat(d.engRate)>=3?'above':'below'} the 3% benchmark. The "${d.aprioriRules?.[0]?.ant}" pattern gives ${d.aprioriRules?.[0]?.lift}x lift — keep using it. For the AI chatbot to work, add your Anthropic API key to the ANTH_KEY variable.`:'Add your Anthropic API key (ANTH_KEY) in the script to activate the AI chatbot.');
+    addBotMsg(d?`**Quick insight:** Your **${d.engRate}%** engagement is ${parseFloat(d.engRate)>=3?'above':'below'} the 3% benchmark. The "${d.aprioriRules?.[0]?.ant}" pattern gives ${d.aprioriRules?.[0]?.lift}x lift — keep using it. (Tip: ensure "Generative Language API" is enabled in your GCP console for AI chat to work.)`:'AI chat requires the Generative Language API to be enabled in your GCP project.');
   }
   document.getElementById('chatSendBtn').disabled=false;
 }
