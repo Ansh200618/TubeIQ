@@ -590,6 +590,11 @@ const CAT_NICHE = {'1':'Entertainment','2':'Travel & Lifestyle','10':'Music','15
 const CAT_LABEL = {'1':'Film & Animation','2':'Autos','10':'Music','15':'Pets & Animals','17':'Sports',
   '19':'Travel','20':'Gaming','22':'Vlogs','23':'Comedy','24':'Entertainment','25':'News',
   '26':'Howto & Style','27':'Education','28':'Science & Tech','29':'Nonprofits'};
+const MIN_VIDEOS_FOR_FULL_CONFIDENCE = 20;
+const MIN_VIDEOS_FOR_RULE_MINING = 2;
+const MSG_NO_RULE_DATA = 'Not enough data to mine association rules.';
+const UNKNOWN_NICHE_META = {icon:'❓',tags:['Not enough video data for niche tags']};
+const MSG_REC_UNAVAILABLE = 'Recommendation generation is unavailable right now. No predefined templates are used; please try again.';
 
 // ── App State ──
 let charts = {};
@@ -651,8 +656,10 @@ async function fetchVideoDetails(channelId){
 function detectNiche(videos){
   const t={};videos.forEach(v=>{const c=(v.snippet?.categoryId)||'24';const n=CAT_NICHE[c]||'Entertainment';t[n]=(t[n]||0)+1});
   const s=Object.entries(t).sort((a,b)=>b[1]-a[1]);
-  if(!s.length)return{niche:'Entertainment',confidence:60};
-  return{niche:s[0][0],confidence:clamp(Math.round((s[0][1]/videos.length)*100),52,98)};
+  if(!s.length)return{niche:'Unknown',confidence:null};
+  const dominance=s[0][1]/videos.length;
+  const sampleFactor=Math.min(1,videos.length/MIN_VIDEOS_FOR_FULL_CONFIDENCE);
+  return{niche:s[0][0],confidence:Math.round(dominance*sampleFactor*100)};
 }
 function buildContentMix(videos){
   const t={};videos.forEach(v=>{const c=(v.snippet?.categoryId)||'24';const l=CAT_LABEL[c]||'Other';t[l]=(t[l]||0)+1});
@@ -698,6 +705,7 @@ function buildMonthlyChart(videos){
   return{labels:keys.map(k=>M[parseInt(k.split('-')[1])]),viewsData:keys.map(k=>bk[k].views),likesData:keys.map(k=>bk[k].likes)};
 }
 function mineAprioriRules(videos){
+  if(videos.length<MIN_VIDEOS_FOR_RULE_MINING)return[];
   const avg=calcAvgEngagement(videos)||0.01;
   const P=[
     {l:'numbered_title',  f:v=>/\d+/.test(v.snippet.title)},
@@ -717,10 +725,7 @@ function mineAprioriRules(videos){
     const con=ge>avg*1.8?'viral_potential':ge>avg*1.2?'high_engagement':ge>avg?'above_avg_CTR':'avg_engagement';
     rules.push({ant:P[i].l+' + '+P[j].l,con,conf,lift});if(rules.length>=6)break outer;
   }
-  const fb=[{ant:'numbered_title + question_format',con:'high_CTR',conf:.94,lift:2.1},{ant:'caps_word + short_title',con:'viral_potential',conf:.91,lift:3.4},
-    {ant:'rich_tags(10+) + long_desc',con:'high_SEO',conf:.93,lift:2.8},{ant:'emoji + numbered_title',con:'high_CTR',conf:.89,lift:1.9},
-    {ant:'regular_uploads + rich_tags',con:'subscriber_growth',conf:.92,lift:2.5},{ant:'caps_word + long_desc',con:'viral_potential',conf:.88,lift:3.1}];
-  while(rules.length<6)rules.push(fb[rules.length]);return rules.slice(0,6);
+  return rules.sort((a,b)=>b.lift-a.lift||b.conf-a.conf).slice(0,6);
 }
 
 /* ════════════════════════════════
@@ -729,11 +734,12 @@ function mineAprioriRules(videos){
 async function buildRealChannelData(channelId){
   const[chanItem,videos]=await Promise.all([fetchChannelInfo(channelId),fetchVideoDetails(channelId)]);
   const cs=chanItem.statistics,sn=chanItem.snippet;
+  const nicheData=detectNiche(videos);
   return{
     channelId,
     name:sn.title,handle:sn.customUrl||'',
     thumbnailUrl:sn.thumbnails?.high?.url||sn.thumbnails?.medium?.url||sn.thumbnails?.default?.url||'',
-    niche:detectNiche(videos).niche,confidence:detectNiche(videos).confidence,
+    niche:nicheData.niche,confidence:nicheData.confidence,
     subs:parseInt(cs.subscriberCount||0),views:parseInt(cs.viewCount||0),videoCount:parseInt(cs.videoCount||0),
     uploadFreq:calcUploadFreq(videos),engRate:calcAvgEngagement(videos).toFixed(2),
     radarScores:buildRadarScores(videos,cs),
@@ -817,29 +823,33 @@ function renderDashboard(data){
 
   // KPIs
   const ec=parseFloat(data.engRate)>=3?'up':'down';
+  const confText=data.confidence===null?'—':data.confidence+'%';
   document.getElementById('kpiGrid').innerHTML=[
     {label:'SUBSCRIBERS',value:fmtNum(data.subs),change:'Real-time from YouTube',cls:'up',accent:'--red'},
     {label:'TOTAL VIEWS',value:fmtNum(data.views),change:'Lifetime channel views',cls:'up',accent:'--cyan'},
     {label:'AVG ENGAGEMENT',value:data.engRate+'%',change:'Likes ÷ Views · '+(data.rawVideos?.length||0)+' videos analyzed',cls:ec,accent:'--green'},
     {label:'UPLOAD FREQUENCY',value:data.uploadFreq,change:'Calculated from publish dates',cls:'up',accent:'--gold'},
-    {label:'NICHE CONFIDENCE',value:data.confidence+'%',change:'AI-powered · category analysis',cls:'up',accent:'--cyan'},
+    {label:'NICHE CONFIDENCE',value:confText,change:'AI-powered · category analysis',cls:'up',accent:'--cyan'},
   ].map((k,i)=>`<div class="kpi-card" style="--accent-color:var(${k.accent});animation-delay:${i*0.08}s">
     <div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div>
     <div class="kpi-change ${k.cls}">${k.change}</div></div>`).join('');
 
   // Niche
-  const n=NICHES[data.niche]||NICHES['Entertainment'];
+  const n=NICHES[data.niche]||UNKNOWN_NICHE_META;
   document.getElementById('nicheIcon').textContent=n.icon;
   document.getElementById('nicheName').textContent=data.niche.toUpperCase();
-  document.getElementById('nicheConf').textContent='✓ '+data.confidence+'% confidence · '+(data.rawVideos?.length||0)+' videos analyzed';
-  document.getElementById('confPct').textContent=data.confidence+'%';
-  setTimeout(()=>document.getElementById('confBar').style.width=data.confidence+'%',400);
+  document.getElementById('nicheConf').textContent=data.confidence!==null
+    ?('✓ '+data.confidence+'% confidence · '+(data.rawVideos?.length||0)+' videos analyzed')
+    :'Not enough public video data to calculate confidence';
+  document.getElementById('confPct').textContent=data.confidence===null?'—':data.confidence+'%';
+  setTimeout(()=>document.getElementById('confBar').style.width=(data.confidence===null?0:data.confidence)+'%',400);
   document.getElementById('nicheTags').innerHTML=n.tags.map((t,i)=>`<span class="tag${i===0?' highlight':''}">${t}</span>`).join('');
 
   // Apriori rules
-  document.getElementById('ruleList').innerHTML=data.aprioriRules.map(r=>
+  document.getElementById('ruleList').innerHTML=data.aprioriRules.length?data.aprioriRules.map(r=>
     `<div class="rule-item"><div class="rule-expr"><span class="bold">{${r.ant}}</span><span class="arrow">⟹</span><span class="bold">{${r.con}}</span></div>
-    <div class="rule-conf">conf: ${r.conf.toFixed(2)}</div><div class="rule-lift">lift: ${r.lift.toFixed(1)}</div></div>`).join('');
+    <div class="rule-conf">conf: ${r.conf.toFixed(2)}</div><div class="rule-lift">lift: ${r.lift.toFixed(1)}</div></div>`).join('')
+    :`<div class="rule-item" role="status" aria-live="polite"><div class="rule-expr">${MSG_NO_RULE_DATA}</div></div>`;
 
   // Recommendations panel — ONLY for owner's own channel
   const rp=document.getElementById('recPanel');
@@ -912,12 +922,13 @@ async function generateRecommendations(){
   // Channel context for prompt
   const topPerformers=(channelContext.recentVideos||[]).slice(0,3).map(v=>`"${v.title}" (${fmtNum(v.views)} views, ${((v.likes/(v.views||1))*100).toFixed(2)}% eng)`).join('\n- ');
   const topRule=channelContext.aprioriRules?.[0];
+  const topRuleLine=topRule?`Top Performing Pattern: "${topRule.ant}" → ${topRule.con} (lift ${topRule.lift}x)`:'Top Performing Pattern: Not enough data';
   const channelSummary=`Channel: ${channelContext.name}
-Niche: ${channelContext.niche} (${channelContext.confidence}% confidence)
+Niche: ${channelContext.niche} (${channelContext.confidence===null?'confidence unavailable':channelContext.confidence+'% confidence'})
 Subscribers: ${fmtNum(channelContext.subs)} | Total Views: ${fmtNum(channelContext.views)}
 Avg Engagement Rate: ${channelContext.engRate}%
 Upload Frequency: ${channelContext.uploadFreq}
-Top Performing Pattern: "${topRule?.ant}" → ${topRule?.con} (lift ${topRule?.lift}x)
+${topRuleLine}
 Best Recent Videos:
 - ${topPerformers}`;
 
@@ -961,36 +972,9 @@ Respond ONLY in valid JSON, no markdown, no explanation. Format:
     const recs=JSON.parse(raw.replace(/```json|```/g,'').trim());
     renderRecCards(recs);
   }catch(e){
-    // Fallback: generate locally based on channel data
-    renderRecCards(buildFallbackRecs(topic,format,audience,keywords));
+    document.getElementById('recResults').innerHTML=`<p style="color:var(--muted);font-family:DM Mono,monospace;font-size:13px">${MSG_REC_UNAVAILABLE}</p>`;
   }
   btn.disabled=false;btn.textContent='GENERATE FULL VIDEO PACKAGE →';
-}
-
-function buildFallbackRecs(topic,format,audience,kw){
-  const ch=channelContext;const n=ch?.niche||'Content';
-  const kwList=kw?kw.split(',').map(k=>k.trim()).filter(Boolean):[];
-  const kwStr=kwList.length?kwList[0]:n.toLowerCase();
-  return[
-    {option:1,title:`I ${topic.slice(0,40)} (${format==='challenge'?'CHALLENGE':'Full Guide'})`,
-     description:`Everything you need to know about ${kwStr}. In this video, I'll take you step by step through the entire process.`,
-     fullDescription:`In this video, I cover everything about ${topic}.\n\n📌 What you'll learn:\n- Step 1\n- Step 2\n- Step 3\n\n⏱ Timestamps:\n0:00 - Intro\n2:00 - Main content\n\n🔔 Subscribe for more ${n} content!\n\n#${kwStr.replace(/\s/g,'')} #${n.replace(/\s/g,'')} #YouTube2025`,
-     tags:[kwStr,n,format,'tutorial','2025','beginners','guide','howto','tips','viral'],
-     thumbnailText:`${kwStr.toUpperCase()} GUIDE`,uploadDay:'Tuesday',uploadTime:'6:00 PM IST',
-     estimatedViews:'5K-25K',whyItWorks:`Matches your channel's best-performing ${format} pattern`},
-    {option:2,title:`Why ${topic.slice(0,35)} Changed Everything For Me`,
-     description:`My honest experience with ${kwStr}. This video might change how you think about it.`,
-     fullDescription:`Story time — here's what happened when I ${topic}.\n\nThis experience taught me a lot, and I'm sharing every detail.\n\n🔔 Subscribe for weekly ${n} videos!\n\n#${kwStr.replace(/\s/g,'')} #storytelling #authentic`,
-     tags:[kwStr,'story','personal','experience','2025',n,'authentic','honest','journey','growth'],
-     thumbnailText:'THE TRUTH ABOUT '+kwStr.toUpperCase().slice(0,8),uploadDay:'Thursday',uploadTime:'7:00 PM IST',
-     estimatedViews:'8K-40K',whyItWorks:'Personal story format drives 2x higher watch time on your channel'},
-    {option:3,title:`${topic.slice(0,30)} in 2025 — Honest Review`,
-     description:`Is ${kwStr} worth it in 2025? I tested it so you don't have to. Full breakdown inside.`,
-     fullDescription:`Complete review of ${topic} in 2025.\n\n✅ Pros:\n- \n\n❌ Cons:\n- \n\nFinal verdict: \n\n🔔 Subscribe for more honest reviews!\n\n#${kwStr.replace(/\s/g,'')} #review #honest #2025`,
-     tags:[kwStr,'review','2025','honest','comparison','worth it',n,'tested','results','breakdown'],
-     thumbnailText:'WORTH IT IN 2025?',uploadDay:'Saturday',uploadTime:'11:00 AM IST',
-     estimatedViews:'3K-15K',whyItWorks:'Review format has highest click-through rate in your niche'},
-  ];
 }
 
 function renderRecCards(recs){
@@ -1082,9 +1066,9 @@ async function sendChat(){
   addUserMsg(txt);chatHistory.push({role:'user',content:txt});
   const d=channelContext;
   const sys=d?`You are TubeIQ AI, an expert YouTube channel advisor. You are analyzing this channel:
-Channel: ${d.name} | Niche: ${d.niche} (${d.confidence}% conf) | Subs: ${fmtNum(d.subs)} | Views: ${fmtNum(d.views)} | Eng: ${d.engRate}% | Frequency: ${d.uploadFreq}
+Channel: ${d.name} | Niche: ${d.niche} (${d.confidence===null?'confidence unavailable':d.confidence+'% conf'}) | Subs: ${fmtNum(d.subs)} | Views: ${fmtNum(d.views)} | Eng: ${d.engRate}% | Frequency: ${d.uploadFreq}
 Top videos: ${(d.recentVideos||[]).slice(0,3).map(v=>'"'+v.title+'" ('+fmtNum(v.views)+' views)').join('; ')}
-Best pattern: ${d.aprioriRules?.[0]?.ant} → ${d.aprioriRules?.[0]?.con} (lift ${d.aprioriRules?.[0]?.lift}x)
+Best pattern: ${d.aprioriRules?.[0]?d.aprioriRules[0].ant+' → '+d.aprioriRules[0].con+' (lift '+d.aprioriRules[0].lift+'x)':'Not enough data'}
 Radar: Engagement=${d.radarScores?.[0]}/100, Consistency=${d.radarScores?.[1]}/100, SEO=${d.radarScores?.[2]}/100
 ${isOwnChannel&&googleUser?'The user is the CHANNEL OWNER — give actionable first-person advice.':'This is a competitor/comparison analysis.'}
 Be concise (3-5 sentences). Use **bold** for key points. No bullet lists.`
@@ -1102,7 +1086,8 @@ Be concise (3-5 sentences). Use **bold** for key points. No bullet lists.`
     chatHistory.push({role:'assistant',content:reply});showTyping(false);addBotMsg(reply);
   }catch(e){
     showTyping(false);
-    addBotMsg(d?`**Quick insight:** Your **${d.engRate}%** engagement is ${parseFloat(d.engRate)>=3?'above':'below'} the 3% benchmark. The "${d.aprioriRules?.[0]?.ant}" pattern gives ${d.aprioriRules?.[0]?.lift}x lift — keep using it. (Tip: ensure "Generative Language API" is enabled in your GCP console for AI chat to work.)`:'AI chat requires the Generative Language API to be enabled in your GCP project.');
+    const patternNote=d?.aprioriRules?.[0]?` The "${d.aprioriRules[0].ant}" pattern gives ${d.aprioriRules[0].lift}x lift — keep using it.`:'';
+    addBotMsg(d?`**Quick insight:** Your **${d.engRate}%** engagement is ${parseFloat(d.engRate)>=3?'above':'below'} the 3% benchmark.${patternNote} (Tip: ensure "Generative Language API" is enabled in your GCP console for AI chat to work.)`:'AI chat requires the Generative Language API to be enabled in your GCP project.');
   }
   document.getElementById('chatSendBtn').disabled=false;
 }
