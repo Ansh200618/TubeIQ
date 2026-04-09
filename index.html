@@ -515,7 +515,7 @@ footer span{color:var(--red)}
     <div class="chat-head-avatar">🤖</div>
     <div class="chat-head-info">
       <h4>TubeIQ AI ADVISOR</h4>
-      <p id="chatStatusLine">● ONLINE · POWERED BY GEMINI</p>
+      <p id="chatStatusLine">● ONLINE · POWERED BY CHATGPT</p>
     </div>
     <button class="chat-close" onclick="toggleChat()">✕</button>
   </div>
@@ -555,7 +555,7 @@ footer span{color:var(--red)}
   </div>
 </div>
 
-<footer>TubeIQ · YouTube Channel Intelligence · Built with <span>♥</span> using Weka · Apriori · Gemini AI · YouTube Data API v3</footer>
+<footer>TubeIQ · YouTube Channel Intelligence · Built with <span>♥</span> using Weka · Apriori · ChatGPT · YouTube Data API v3</footer>
 
 <script>
 /* ══════════════════════════════════════════════════
@@ -568,9 +568,9 @@ const API_KEY = 'AIzaSyAY6dcunw97THYJ42Y6VuCckOjlUP05Fpc';
 // 2. Google OAuth Client ID — get from console.cloud.google.com
 //    Replace with your own, then Google Login will work
 const G_CLIENT = '574845010481-hiu0cmuml49cv869uupfgefcd69enbkp.apps.googleusercontent.com';
-// 3. Gemini AI API key — get yours FREE at https://aistudio.google.com/app/apikey
+// 3. OpenAI (ChatGPT) API key — get yours at https://platform.openai.com/api-keys
 //    Paste your key here to enable the AI chatbot and smart recommendations.
-const GEMINI_KEY = '';
+const OPENAI_KEY = '';
 // ──────────────────────────────────────────────────
 
 const YT = 'https://www.googleapis.com/youtube/v3';
@@ -938,15 +938,15 @@ Respond ONLY in valid JSON, no markdown, no explanation. Format:
 ]`;
 
   try{
-    if(!GEMINI_KEY)throw new Error('no_key');
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
+    if(!OPENAI_KEY)throw new Error('no_key');
+    const res=await fetch('https://api.openai.com/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:2000}})
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+OPENAI_KEY},
+      body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'user',content:prompt}],max_tokens:2000})
     });
     const j=await res.json();
     if(j.error)throw new Error(j.error.message||'api_error');
-    const raw=j.candidates?.[0]?.content?.parts?.[0]?.text||'[]';
+    const raw=j.choices?.[0]?.message?.content||'[]';
     const recs=JSON.parse(raw.replace(/```json|```/g,'').trim());
     renderRecCards(recs);
   }catch(e){
@@ -1079,33 +1079,33 @@ ${isOwnChannel&&googleUser?'The user is the CHANNEL OWNER — give actionable fi
 Be concise (3-5 sentences). Use **bold** for key points. No bullet lists.`
   :'You are TubeIQ AI, a YouTube growth expert. Give brief actionable advice.';
   showTyping(true);
-  if(!GEMINI_KEY){
+  if(!OPENAI_KEY){
     showTyping(false);
-    addBotMsg('⚠️ **Gemini API key not set.** To enable the AI chatbot:\n1. Go to **https://aistudio.google.com/app/apikey** and create a free API key.\n2. Open **index.html**, find `const GEMINI_KEY = \'\'` near the top, and paste your key inside the quotes.\n3. Save and reload the page.');
+    addBotMsg('⚠️ **OpenAI API key not set.** To enable the AI chatbot:\n1. Go to **https://platform.openai.com/api-keys** and create an API key.\n2. Open **index.html**, find `const OPENAI_KEY = \'\'` near the top, and paste your key inside the quotes.\n3. Save and reload the page.');
     document.getElementById('chatSendBtn').disabled=false;return;
   }
   try{
-    const msgs=chatHistory.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
+    const msgs=[{role:'system',content:sys},...chatHistory.map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.content}))];
+    const res=await fetch('https://api.openai.com/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:msgs,generationConfig:{maxOutputTokens:350}})
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+OPENAI_KEY},
+      body:JSON.stringify({model:'gpt-4o-mini',messages:msgs,max_tokens:350})
     });
     const j=await res.json();
     if(j.error){
       showTyping(false);
-      const code=j.error.code||0;const msg=j.error.message||'Unknown error';
-      if(code===400)addBotMsg(`⚠️ **Invalid API key.** Please check your GEMINI_KEY in index.html. Get a free key at https://aistudio.google.com/app/apikey`);
-      else if(code===403)addBotMsg(`⚠️ **Permission denied.** Your API key doesn't have access to Gemini. Get a free key at https://aistudio.google.com/app/apikey`);
-      else if(code===429)addBotMsg(`⚠️ **Rate limit reached.** Please wait a moment and try again.`);
-      else addBotMsg(`⚠️ **Gemini API error (${code}):** ${msg}`);
+      const status=res.status;const msg=j.error.message||'Unknown error';
+      if(status===401)addBotMsg('⚠️ **Invalid API key.** Please check your OPENAI_KEY in index.html. Get a key at https://platform.openai.com/api-keys');
+      else if(status===429)addBotMsg('⚠️ **Rate limit or quota exceeded.** Please wait a moment or check your OpenAI billing at https://platform.openai.com/usage');
+      else if(status===403)addBotMsg('⚠️ **Access denied.** Your API key may not have access to this model.');
+      else addBotMsg(`⚠️ **OpenAI API error (${status}):** ${msg}`);
       document.getElementById('chatSendBtn').disabled=false;return;
     }
-    const reply=j.candidates?.[0]?.content?.parts?.[0]?.text||"I couldn't get a response. Please try again.";
+    const reply=j.choices?.[0]?.message?.content||"I couldn't get a response. Please try again.";
     chatHistory.push({role:'assistant',content:reply});showTyping(false);addBotMsg(reply);
   }catch(e){
     showTyping(false);
-    addBotMsg(`⚠️ **Network error.** Could not reach the Gemini API. Please check your internet connection and try again.`);
+    addBotMsg('⚠️ **Network error.** Could not reach the OpenAI API. Please check your internet connection and try again.');
   }
   document.getElementById('chatSendBtn').disabled=false;
 }
