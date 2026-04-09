@@ -378,9 +378,9 @@ footer span{color:var(--red)}
   <div class="loader-text">ANALYZING CHANNEL</div>
   <div class="loader-steps">
     <div class="step-item" id="s1"><div class="step-dot"></div>Fetching channel data via YouTube API…</div>
-    <div class="step-item" id="s2"><div class="step-dot"></div>Generating ARFF dataset…</div>
-    <div class="step-item" id="s3"><div class="step-dot"></div>Running Apriori algorithm (Weka)…</div>
-    <div class="step-item" id="s4"><div class="step-dot"></div>Classifying niche with J48 decision tree…</div>
+    <div class="step-item" id="s2"><div class="step-dot"></div>Processing video data…</div>
+    <div class="step-item" id="s3"><div class="step-dot"></div>Mining content patterns…</div>
+    <div class="step-item" id="s4"><div class="step-dot"></div>Classifying channel niche…</div>
     <div class="step-item" id="s5"><div class="step-dot"></div>Building AI content analysis…</div>
   </div>
 </div>
@@ -407,7 +407,7 @@ footer span{color:var(--red)}
   <div class="grid-3">
     <div class="panel" id="nichePanel">
       <div class="panel-title">NICHE CLASSIFICATION</div>
-      <div class="panel-sub">J48 DECISION TREE · WEKA 3.9</div>
+      <div class="panel-sub">AI-POWERED · CATEGORY ANALYSIS</div>
       <div class="niche-main">
         <div class="niche-icon" id="nicheIcon">🔬</div>
         <div><div class="niche-name" id="nicheName">—</div><div class="niche-conf" id="nicheConf">—</div></div>
@@ -625,10 +625,24 @@ async function fetchChannelInfo(id){
   const j=await ytFetch('channels',{part:'snippet,statistics',id});
   if(!j.items?.length)throw new Error('Channel not found.');return j.items[0];
 }
-async function fetchVideoDetails(channelId,max){
-  const s=await ytFetch('search',{part:'id',channelId,type:'video',order:'date',maxResults:max||50});
-  const ids=(s.items||[]).map(i=>i.id.videoId).filter(Boolean);if(!ids.length)return[];
-  const v=await ytFetch('videos',{part:'snippet,statistics,contentDetails',id:ids.join(',')});return v.items||[];
+async function fetchVideoDetails(channelId){
+  let allIds=[];
+  let pageToken='';
+  do{
+    const params={part:'id',channelId,type:'video',order:'date',maxResults:50};
+    if(pageToken)params.pageToken=pageToken;
+    const s=await ytFetch('search',params);
+    (s.items||[]).forEach(i=>{if(i.id.videoId)allIds.push(i.id.videoId)});
+    pageToken=s.nextPageToken||'';
+  }while(pageToken);
+  if(!allIds.length)return[];
+  const allVideos=[];
+  for(let i=0;i<allIds.length;i+=50){
+    const batch=allIds.slice(i,i+50);
+    const v=await ytFetch('videos',{part:'snippet,statistics,contentDetails',id:batch.join(',')});
+    allVideos.push(...(v.items||[]));
+  }
+  return allVideos;
 }
 
 /* ════════════════════════════════
@@ -713,7 +727,7 @@ function mineAprioriRules(videos){
    MAIN DATA BUILDER
    ════════════════════════════════ */
 async function buildRealChannelData(channelId){
-  const[chanItem,videos]=await Promise.all([fetchChannelInfo(channelId),fetchVideoDetails(channelId,50)]);
+  const[chanItem,videos]=await Promise.all([fetchChannelInfo(channelId),fetchVideoDetails(channelId)]);
   const cs=chanItem.statistics,sn=chanItem.snippet;
   return{
     channelId,
@@ -806,9 +820,9 @@ function renderDashboard(data){
   document.getElementById('kpiGrid').innerHTML=[
     {label:'SUBSCRIBERS',value:fmtNum(data.subs),change:'Real-time from YouTube',cls:'up',accent:'--red'},
     {label:'TOTAL VIEWS',value:fmtNum(data.views),change:'Lifetime channel views',cls:'up',accent:'--cyan'},
-    {label:'AVG ENGAGEMENT',value:data.engRate+'%',change:'Likes ÷ Views · last 50 videos',cls:ec,accent:'--green'},
+    {label:'AVG ENGAGEMENT',value:data.engRate+'%',change:'Likes ÷ Views · '+(data.rawVideos?.length||0)+' videos analyzed',cls:ec,accent:'--green'},
     {label:'UPLOAD FREQUENCY',value:data.uploadFreq,change:'Calculated from publish dates',cls:'up',accent:'--gold'},
-    {label:'NICHE CONFIDENCE',value:data.confidence+'%',change:'Weka J48 · category analysis',cls:'up',accent:'--cyan'},
+    {label:'NICHE CONFIDENCE',value:data.confidence+'%',change:'AI-powered · category analysis',cls:'up',accent:'--cyan'},
   ].map((k,i)=>`<div class="kpi-card" style="--accent-color:var(${k.accent});animation-delay:${i*0.08}s">
     <div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div>
     <div class="kpi-change ${k.cls}">${k.change}</div></div>`).join('');
@@ -817,7 +831,7 @@ function renderDashboard(data){
   const n=NICHES[data.niche]||NICHES['Entertainment'];
   document.getElementById('nicheIcon').textContent=n.icon;
   document.getElementById('nicheName').textContent=data.niche.toUpperCase();
-  document.getElementById('nicheConf').textContent='✓ '+data.confidence+'% confidence · '+Math.min(50,data.rawVideos?.length||0)+' videos analyzed';
+  document.getElementById('nicheConf').textContent='✓ '+data.confidence+'% confidence · '+(data.rawVideos?.length||0)+' videos analyzed';
   document.getElementById('confPct').textContent=data.confidence+'%';
   setTimeout(()=>document.getElementById('confBar').style.width=data.confidence+'%',400);
   document.getElementById('nicheTags').innerHTML=n.tags.map((t,i)=>`<span class="tag${i===0?' highlight':''}">${t}</span>`).join('');
