@@ -568,8 +568,9 @@ const API_KEY = 'AIzaSyAY6dcunw97THYJ42Y6VuCckOjlUP05Fpc';
 // 2. Google OAuth Client ID — get from console.cloud.google.com
 //    Replace with your own, then Google Login will work
 const G_CLIENT = '574845010481-hiu0cmuml49cv869uupfgefcd69enbkp.apps.googleusercontent.com';
-// 3. Gemini AI is used for the chatbot and recommendations.
-//    It reuses the same API_KEY above (enable "Generative Language API" in GCP console).
+// 3. Gemini AI API key — get yours FREE at https://aistudio.google.com/app/apikey
+//    Paste your key here to enable the AI chatbot and smart recommendations.
+const GEMINI_KEY = '';
 // ──────────────────────────────────────────────────
 
 const YT = 'https://www.googleapis.com/youtube/v3';
@@ -937,12 +938,14 @@ Respond ONLY in valid JSON, no markdown, no explanation. Format:
 ]`;
 
   try{
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,{
+    if(!GEMINI_KEY)throw new Error('no_key');
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:2000}})
     });
     const j=await res.json();
+    if(j.error)throw new Error(j.error.message||'api_error');
     const raw=j.candidates?.[0]?.content?.parts?.[0]?.text||'[]';
     const recs=JSON.parse(raw.replace(/```json|```/g,'').trim());
     renderRecCards(recs);
@@ -1076,19 +1079,33 @@ ${isOwnChannel&&googleUser?'The user is the CHANNEL OWNER — give actionable fi
 Be concise (3-5 sentences). Use **bold** for key points. No bullet lists.`
   :'You are TubeIQ AI, a YouTube growth expert. Give brief actionable advice.';
   showTyping(true);
+  if(!GEMINI_KEY){
+    showTyping(false);
+    addBotMsg('⚠️ **Gemini API key not set.** To enable the AI chatbot:\n1. Go to **https://aistudio.google.com/app/apikey** and create a free API key.\n2. Open **index.html**, find `const GEMINI_KEY = \'\'` near the top, and paste your key inside the quotes.\n3. Save and reload the page.');
+    document.getElementById('chatSendBtn').disabled=false;return;
+  }
   try{
     const msgs=chatHistory.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`,{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:msgs,generationConfig:{maxOutputTokens:350}})
     });
     const j=await res.json();
+    if(j.error){
+      showTyping(false);
+      const code=j.error.code||0;const msg=j.error.message||'Unknown error';
+      if(code===400)addBotMsg(`⚠️ **Invalid API key.** Please check your GEMINI_KEY in index.html. Get a free key at https://aistudio.google.com/app/apikey`);
+      else if(code===403)addBotMsg(`⚠️ **Permission denied.** Your API key doesn't have access to Gemini. Get a free key at https://aistudio.google.com/app/apikey`);
+      else if(code===429)addBotMsg(`⚠️ **Rate limit reached.** Please wait a moment and try again.`);
+      else addBotMsg(`⚠️ **Gemini API error (${code}):** ${msg}`);
+      document.getElementById('chatSendBtn').disabled=false;return;
+    }
     const reply=j.candidates?.[0]?.content?.parts?.[0]?.text||"I couldn't get a response. Please try again.";
     chatHistory.push({role:'assistant',content:reply});showTyping(false);addBotMsg(reply);
   }catch(e){
     showTyping(false);
-    addBotMsg(d?`**Quick insight:** Your **${d.engRate}%** engagement is ${parseFloat(d.engRate)>=3?'above':'below'} the 3% benchmark. The "${d.aprioriRules?.[0]?.ant}" pattern gives ${d.aprioriRules?.[0]?.lift}x lift — keep using it. (Tip: ensure "Generative Language API" is enabled in your GCP console for AI chat to work.)`:'AI chat requires the Generative Language API to be enabled in your GCP project.');
+    addBotMsg(`⚠️ **Network error.** Could not reach the Gemini API. Please check your internet connection and try again.`);
   }
   document.getElementById('chatSendBtn').disabled=false;
 }
