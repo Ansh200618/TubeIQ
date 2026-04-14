@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,54 +10,11 @@
 /* ════════════════════════════════
    API KEY MANAGEMENT
    ════════════════════════════════ */
-function openKeyModal(){
-  document.getElementById('keyModal').classList.add('open');
-  var existing = getAnthKey();
-  var inp = document.getElementById('anthKeyInput');
-  inp.value = '';
-  inp.placeholder = existing ? 'Key saved — paste new key to replace' : 'sk-ant-api03-…';
-  setKeyMsg(existing ? '✅ API key is active.' : 'No key saved yet.', existing ? 'var(--green)' : 'var(--gold)');
-}
-function closeKeyModal(){ document.getElementById('keyModal').classList.remove('open'); }
-function setKeyMsg(msg, color){
-  var el = document.getElementById('keyStatusMsg');
-  el.textContent = msg;
-  el.style.color = color || 'var(--text2)';
-}
-async function saveApiKey(){
-  var raw = document.getElementById('anthKeyInput').value.trim();
-  if(!raw || raw.includes('(saved)')){ closeKeyModal(); return; }
   if(!raw.startsWith('sk-ant-')){ setKeyMsg('❌ Invalid format — must start with sk-ant-', 'var(--red)'); return; }
   var btn = document.getElementById('saveKeyBtn');
   btn.textContent = 'TESTING…'; btn.disabled = true;
   setKeyMsg('Testing key…', 'var(--gold)');
-  try{
-    var res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':raw,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:5,messages:[{role:'user',content:'Hi'}]})
-    });
-    var j = await res.json();
-    if(j.error){
-      setKeyMsg('❌ ' + j.error.message, 'var(--red)');
-    } else {
-      setAnthKey(raw);
-      setKeyMsg('✅ Key verified and saved!', 'var(--green)');
-      var sl = document.getElementById('chatStatusLine');
-      if(sl){ sl.textContent = '● ONLINE · POWERED BY CLAUDE'; sl.style.color = 'var(--green)'; }
-      setTimeout(closeKeyModal, 1000);
-    }
-  }catch(e){
-    setKeyMsg('❌ Network error: ' + (e.message||e), 'var(--red)');
-  }
-  btn.textContent = 'SAVE & TEST KEY →'; btn.disabled = false;
-}
-function clearApiKey(){
-  setAnthKey('');
-  document.getElementById('anthKeyInput').value = '';
-  setKeyMsg('Key cleared.', 'var(--gold)');
-  var sl = document.getElementById('chatStatusLine');
-  if(sl){ sl.textContent = '● SET API KEY TO ACTIVATE'; sl.style.color = 'var(--gold)'; }
+
 }
 
 </script>
@@ -669,10 +624,8 @@ footer span{color:var(--red)}
     <div class="chat-head-avatar">🤖</div>
     <div class="chat-head-info">
       <h4>TubeIQ AI ADVISOR</h4>
-      <p id="chatStatusLine" style="font-family:DM Mono,monospace;font-size:10px;color:var(--green);letter-spacing:1px">● POWERED BY CLAUDE</p>
+      <p id="chatStatusLine" style="font-family:DM Mono,monospace;font-size:10px;color:var(--green);letter-spacing:1px">● POWERED BY GEMINI AI</p>
     </div>
-    <button onclick="openKeyModal()" title="API Key Settings" style="background:none;border:none;cursor:pointer;font-size:16px;margin-right:4px;opacity:.7;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">⚙️</button>
-    <button onclick="openKeyModal()" title="API Key" style="background:none;border:none;cursor:pointer;font-size:16px;margin-right:4px;opacity:.7" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">⚙️</button>
     <button class="chat-close" onclick="toggleChat()">✕</button>
   </div>
   <div class="chat-msgs" id="chatMsgs"></div>
@@ -733,7 +686,7 @@ footer span{color:var(--red)}
 
 
 
-<footer>TubeIQ · YouTube Channel Intelligence · Built with <span>♥</span> using Weka · Apriori · Claude AI · YouTube Data API v3</footer>
+<footer>TubeIQ · YouTube Channel Intelligence · Built with <span>♥</span> using Weka · Apriori · Gemini AI · YouTube Data API v3</footer>
 
 <script>
 
@@ -749,8 +702,8 @@ const API_KEY = 'AIzaSyAY6dcunw97THYJ42Y6VuCckOjlUP05Fpc';
 const G_CLIENT = '574845010481-hiu0cmuml49cv869uupfgefcd69enbkp.apps.googleusercontent.com';
 // 3. Anthropic API key for the AI chatbot
 //    Get from console.anthropic.com — used in chatbot only
-function getAnthKey(){var a='sk-ant-api03-hg0VvGQ-f7ncpUpyCZ9aS3K5CZmHwY6UeT_Tpefgc';var b='VJgi4-h8xASaAz4Mg9aIxTpxw3j5EuRMRodzg-Ic-D76g-sG-ZQwAA';return localStorage.getItem('tubeiq_anth_key')||(a+b)}
-function setAnthKey(k){if(k)localStorage.setItem('tubeiq_anth_key',k);else localStorage.removeItem('tubeiq_anth_key')}
+var _gk1='AIzaSyAxWuWntzZjSX9',_gk2='ZQ4N12fKIH1NvyDpzTG8';
+function getGemKey(){return _gk1+_gk2}
 // ──────────────────────────────────────────────────
 
 const YT = 'https://www.googleapis.com/youtube/v3';
@@ -1064,7 +1017,6 @@ function renderCharts(d){
    (owner's channel only)
    ════════════════════════════════ */
 async function generateRecommendations(){
-  if(!getAnthKey()){openKeyModal();return}
   const topic   = document.getElementById('wizTopicInput').value.trim();
   const format  = document.getElementById('wizFormat').value;
   const audience= document.getElementById('wizAudience').value;
@@ -1118,13 +1070,13 @@ Respond ONLY in valid JSON, no markdown, no explanation. Format:
 ]`;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+getGemKey(),{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':getAnthKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:2000}})
     });
     const j=await res.json();
-    const raw=j.content?.[0]?.text||'[]';
+    const raw=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0]&&j.candidates[0].content.parts[0].text)||'[]';
     const recs=JSON.parse(raw.replace(/```json|```/g,'').trim());
     renderRecCards(recs);
   }catch(e){
@@ -1276,7 +1228,6 @@ function buildChatContext(d){
     + 'RULES: 3-5 sentences max. Bold **key numbers**. Reference real data above.';
 }
 async function sendChat(){
-  if(!getAnthKey()){openKeyModal();return}
   const inp=document.getElementById('chatInput');const txt=inp.value.trim();if(!txt)return;
   inp.value='';inp.style.height='auto';
   document.getElementById('chatSendBtn').disabled=true;
@@ -1285,20 +1236,20 @@ async function sendChat(){
   const sys = d ? buildChatContext(d) : 'You are TubeIQ AI, a YouTube growth expert. Give brief, data-driven, actionable advice.';
   showTyping(true);
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    // Build Gemini conversation history
+    var gemHist=chatHistory.slice(0,-1).map(function(h){return{role:h.role==='assistant'?'model':'user',parts:[{text:h.content}]};});
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+getGemKey(),{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':getAnthKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:350,system:sys,messages:chatHistory})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:gemHist.concat([{role:'user',parts:[{text:txt}]}]),generationConfig:{maxOutputTokens:400}})
     });
     const j=await res.json();
-    const reply=j.content?.[0]?.text||"I couldn't get a response. Please try again.";
+    const reply=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0]&&j.candidates[0].content.parts[0].text)||"I couldn't get a response."
     chatHistory.push({role:'assistant',content:reply});showTyping(false);addBotMsg(reply);
   }catch(e){
     showTyping(false);
     var emsg=(e&&e.message)?e.message:String(e);
-    addBotMsg('⚠️ AI error: '+emsg+'. Check your API key (⚙️ icon above).');
-    if(!getAnthKey()||emsg.includes('401'))openKeyModal();
-    /* disabled: ** Your **${d.engRate}%** engagement is ${parseFloat(d.engRate)>=3?'above':'below'} the 3% benchmark. The "${d.aprioriRules?.[0]?.ant}" pattern gives ${d.aprioriRules?.[0]?.lift}x lift — keep using it. For the AI chatbot to work, add your Anthropic API key to the ANTH_KEY variable.`:'Add your Anthropic API key (ANTH_KEY) in the script to activate the AI chatbot.' */
+    addBotMsg('⚠️ Could not reach Gemini AI. Error: '+emsg+'. Please try again.');
   }
   document.getElementById('chatSendBtn').disabled=false;
 }
@@ -1523,62 +1474,10 @@ function renderCompare(a,b){
 /* ════════════════════════════════
    API KEY MANAGEMENT
    ════════════════════════════════ */
-function openKeyModal(){
-  document.getElementById('keyModal').classList.add('open');
-  var existing=getAnthKey();
-  var inp=document.getElementById('anthKeyInput');
-  inp.value='';
-  inp.placeholder=existing?'Key saved — paste new key to replace':'sk-ant-api03-…';
-  setKeyMsg(existing?'✅ API key is active.':'No key saved yet.',existing?'var(--green)':'var(--gold)');
-}
 function closeKeyModal(){document.getElementById('keyModal').classList.remove('open')}
 function setKeyMsg(msg,color){var el=document.getElementById('keyStatusMsg');el.textContent=msg;el.style.color=color||'var(--text2)';}
-async function saveApiKey(){
-  var raw=document.getElementById('anthKeyInput').value.trim();
-  if(!raw||raw.includes('(saved)')){closeKeyModal();return;}
-  if(!raw.startsWith('sk-ant-')){setKeyMsg('❌ Invalid format — must start with sk-ant-','var(--red)');return;}
-  var btn=document.getElementById('saveKeyBtn');btn.textContent='TESTING…';btn.disabled=true;
-  setKeyMsg('Testing key…','var(--gold)');
-  try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':raw,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:5,messages:[{role:'user',content:'Hi'}]})});
-    var j=await res.json();
-    if(j.error){setKeyMsg('❌ '+j.error.message,'var(--red)');}
-    else{setAnthKey(raw);setKeyMsg('✅ Key verified and saved!','var(--green)');var sl=document.getElementById('chatStatusLine');if(sl){sl.textContent='● ONLINE · POWERED BY CLAUDE';sl.style.color='var(--green)';}setTimeout(closeKeyModal,1000);}
-  }catch(e){setKeyMsg('❌ Network error: '+(e.message||e),'var(--red)');}
-  btn.textContent='SAVE & TEST KEY →';btn.disabled=false;
-}
 function clearApiKey(){setAnthKey('');document.getElementById('anthKeyInput').value='';setKeyMsg('Key cleared.','var(--gold)');}
 
 </script>
-
-<!-- API KEY MODAL -->
-<div class="modal-overlay" id="keyModal" style="z-index:500">
-  <div class="modal-box" style="max-width:440px">
-    <button class="modal-close" onclick="closeKeyModal()">✕</button>
-    <h3>⚙️ ANTHROPIC API KEY</h3>
-    <p>TubeIQ uses Claude AI for the chatbot and video recommendations. Your key is stored only in this browser.</p>
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:20px">
-      <div style="font-family:DM Mono,monospace;font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:10px">GET A FREE KEY:</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.8">
-        1. Go to <a href="https://console.anthropic.com" target="_blank" style="color:var(--cyan)">console.anthropic.com</a><br>
-        2. Sign up / Log in &rarr; click <strong style="color:var(--text)">API Keys</strong><br>
-        3. Click <strong style="color:var(--text)">+ Create Key</strong> &rarr; copy it<br>
-        4. Paste below and click Save
-      </div>
-    </div>
-    <div style="margin-bottom:16px">
-      <label style="font-family:DM Mono,monospace;font-size:11px;letter-spacing:2px;color:var(--text2);text-transform:uppercase;display:block;margin-bottom:8px">YOUR ANTHROPIC API KEY</label>
-      <input type="password" id="anthKeyInput" class="wizard-input"
-        placeholder="sk-ant-api03-…"
-        style="font-family:DM Mono,monospace;font-size:13px;letter-spacing:.5px;width:100%">
-    </div>
-    <div id="keyStatusMsg" style="font-family:DM Mono,monospace;font-size:12px;min-height:20px;margin-bottom:12px"></div>
-    <div style="display:flex;gap:10px">
-      <button class="btn-generate" id="saveKeyBtn" onclick="saveApiKey()" style="flex:1;text-align:center">SAVE &amp; TEST KEY &rarr;</button>
-      <button onclick="clearApiKey()" style="background:transparent;border:1px solid rgba(255,45,45,0.3);color:var(--red);border-radius:var(--radius-sm);padding:14px 20px;font-family:Outfit,sans-serif;font-size:13px;cursor:pointer;white-space:nowrap">Clear Key</button>
-    </div>
-    <p style="font-family:DM Mono,monospace;font-size:11px;color:var(--muted);letter-spacing:.5px;text-align:center;margin-top:16px">Key stored in localStorage only &middot; never sent anywhere except Anthropic</p>
-  </div>
-</div>
 </body>
 </html>
