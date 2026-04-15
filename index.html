@@ -1383,12 +1383,29 @@ function renderGoogleSignInButton(shouldReRender){
   google.accounts.id.renderButton(btnEl,{theme:buttonTheme,size:'large',width:400,text:'signin_with',shape:'rectangular'});
 }
 
+function parseJwtPayload(token){
+  if(!token||typeof token!=='string')throw new Error('Missing credential token');
+  var parts=token.split('.');
+  if(parts.length<2)throw new Error('Invalid credential format');
+  var b64=parts[1].replace(/-/g,'+').replace(/_/g,'/');
+  while(b64.length%4)b64+='=';
+  return JSON.parse(atob(b64));
+}
+
 function handleGoogleIdToken(resp){
-  var pl=JSON.parse(atob(resp.credential.split('.')[1]));
-  googleUser={name:pl.name,email:pl.email,picture:pl.picture};
+  var pl;
+  try{
+    pl=parseJwtPayload(resp&&resp.credential);
+  }catch(e){
+    alert('Google sign-in failed. Please try again.');
+    return;
+  }
+  var displayName=(pl&&pl.name)||'User';
+  var displayPic=(pl&&pl.picture)||'';
+  googleUser={name:displayName,email:(pl&&pl.email)||'',picture:displayPic};
   document.getElementById('navLoginBtn').style.display='none';
-  document.getElementById('navUserImg').src=pl.picture;
-  document.getElementById('navUserName').textContent=pl.name.split(' ')[0];
+  document.getElementById('navUserImg').src=displayPic;
+  document.getElementById('navUserName').textContent=displayName.split(' ')[0];
   document.getElementById('navUserPill').classList.add('active');
   lsShow(2);
   document.getElementById('lsMsg').textContent='Requesting YouTube access…';
