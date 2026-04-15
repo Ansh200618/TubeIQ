@@ -42,6 +42,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .theme-select{background:var(--bg2);border:1px solid var(--border);color:var(--text2);border-radius:999px;padding:6px 10px;
   font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;outline:none;cursor:pointer}
 .theme-select:focus{border-color:rgba(0,212,255,0.45)}
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+  overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .nav-badge{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;
   background:var(--red-dim);border:1px solid rgba(255,45,45,0.3);color:var(--red);padding:4px 12px;border-radius:20px}
 .nav-login-btn{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border);
@@ -463,7 +465,7 @@ footer span{color:var(--red)}
         onkeydown="if(event.key==='Enter')startAnalysis()">
       <button class="btn-analyze" onclick="startAnalysis()">ANALYZE →</button>
     </div>
-    <p class="hint">Try: <a href="#" onclick="demoLoad('UCX6OQ3DkcsbYNE6H8uQQuVA');return false;">@MrBeast</a> · <a href="#" onclick="demoLoad('UCHnyfMqiRRG1u-2MsSQLbXA');return false;">@Veritasium</a> · <a href="#" onclick="demoLoad('UCXuqSBlHAE6Xw-yeJA0Tunw');return false;">@LinusTechTips</a></p>
+    <p class="hint">Try: <a href="#" aria-label="Load MrBeast channel demo" onclick="demoLoad('UCX6OQ3DkcsbYNE6H8uQQuVA');return false;">@MrBeast</a> · <a href="#" aria-label="Load Veritasium channel demo" onclick="demoLoad('UCHnyfMqiRRG1u-2MsSQLbXA');return false;">@Veritasium</a> · <a href="#" aria-label="Load Linus Tech Tips channel demo" onclick="demoLoad('UCXuqSBlHAE6Xw-yeJA0Tunw');return false;">@LinusTechTips</a></p>
   </div>
   <div class="hero-divider"><span>OR ANALYZE YOUR OWN CHANNEL</span></div>
   <button class="btn-google-login" onclick="openLoginModal()">
@@ -491,6 +493,7 @@ footer span{color:var(--red)}
     <div class="step-item" id="s5"><div class="step-dot"></div>Building AI content analysis…</div>
   </div>
 </div>
+<div id="srStatus" class="sr-only" aria-live="polite"></div>
 
 <!-- DASHBOARD -->
 <div id="dashboard">
@@ -748,6 +751,7 @@ let themeMode      = 'auto';
 function fmtNum(n){n=parseInt(n)||0;if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
 function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v))}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function announceStatus(msg){const s=document.getElementById('srStatus');if(!s)return;s.textContent='';setTimeout(function(){s.textContent=msg;},20)}
 
 /* ════════════════════════════════
    THEME MODE (DAY / NIGHT / AUTO)
@@ -764,6 +768,7 @@ function setThemeMode(mode){
   localStorage.setItem(THEME_KEY,themeMode);
   const sel=document.getElementById('themeModeSelect');if(sel)sel.value=themeMode;
   applyTheme(themeMode);
+  announceStatus('Theme set to '+themeMode+' mode.');
 }
 function initThemeMode(){
   const saved=localStorage.getItem(THEME_KEY)||'auto';
@@ -1077,6 +1082,7 @@ function exportPowerBIData(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=url;a.download=(d.name||'channel').replace(/[^\w-]+/g,'_')+'_powerbi_metrics.csv';
+  announceStatus('Downloading '+a.download+' for Power BI.');
   document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
 }
 
@@ -1110,18 +1116,18 @@ function extractJSONArray(text){
     const parsed=JSON.parse(s);
     if(Array.isArray(parsed))return parsed;
   }catch{}
-  let start=-1,depth=0,inStr=false,escp=false;
+  let start=-1,depth=0,inStr=false,isEscaped=false;
   for(let i=0;i<s.length;i++){
-    const ch=s[i];
+    const currentChar=s[i];
     if(inStr){
-      if(escp){escp=false;continue}
-      if(ch==='\\'){escp=true;continue}
-      if(ch==='"')inStr=false;
+      if(isEscaped){isEscaped=false;continue}
+      if(currentChar==='\\'){isEscaped=true;continue}
+      if(currentChar==='"')inStr=false;
       continue;
     }
-    if(ch==='"'){inStr=true;continue}
-    if(ch==='['){if(start===-1)start=i;depth++;continue}
-    if(ch===']'&&start!==-1){depth--;if(depth===0){return JSON.parse(s.slice(start,i+1));}}
+    if(currentChar==='"'){inStr=true;continue}
+    if(currentChar==='['){if(start===-1)start=i;depth++;continue}
+    if(currentChar===']'&&start!==-1){depth--;if(depth===0){return JSON.parse(s.slice(start,i+1));}}
   }
   throw new Error('AI response was not valid JSON.');
 }
