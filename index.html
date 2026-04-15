@@ -1423,7 +1423,7 @@ function requestYTToken(){
       alert('YouTube access was denied. TubeIQ needs YouTube access to detect your channel.');
     }
   });
-  tc.requestAccessToken({prompt:''});
+  tc.requestAccessToken({prompt:googleAccessToken?'':'consent'});
 }
 
 async function handleYTToken(tr){
