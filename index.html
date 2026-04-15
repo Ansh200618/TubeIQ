@@ -1412,10 +1412,11 @@ function handleGoogleIdToken(resp){
     return;
   }
   var displayName=pl.name;
-  var displayPic=(pl&&pl.picture)||'';
-  googleUser={name:displayName,email:(pl&&pl.email)||'',picture:displayPic};
+  var displayPic=pl.picture||'';
+  googleUser={name:displayName,email:pl.email||'',picture:displayPic};
   document.getElementById('navLoginBtn').style.display='none';
-  document.getElementById('navUserImg').src=displayPic;
+  var navUserImg=document.getElementById('navUserImg');
+  if(displayPic)navUserImg.src=displayPic;else navUserImg.removeAttribute('src');
   document.getElementById('navUserName').textContent=displayName.split(' ')[0];
   document.getElementById('navUserPill').classList.add('active');
   lsShow(2);
