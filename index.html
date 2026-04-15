@@ -1383,12 +1383,41 @@ function renderGoogleSignInButton(shouldReRender){
   google.accounts.id.renderButton(btnEl,{theme:buttonTheme,size:'large',width:400,text:'signin_with',shape:'rectangular'});
 }
 
+function parseJwtPayload(token){
+  if(!token)throw new Error('Credential token is required');
+  if(typeof token!=='string')throw new Error('Credential token must be a string');
+  var parts=token.split('.');
+  if(parts.length<2)throw new Error('JWT token must contain header and payload sections');
+  var b64=parts[1].replace(/-/g,'+').replace(/_/g,'/');
+  while(b64.length%4)b64+='=';
+  return JSON.parse(atob(b64));
+}
+
 function handleGoogleIdToken(resp){
-  var pl=JSON.parse(atob(resp.credential.split('.')[1]));
-  googleUser={name:pl.name,email:pl.email,picture:pl.picture};
+  var credential=resp&&resp.credential;
+  if(!credential){
+    alert('Google sign-in failed. Missing credential response.');
+    return;
+  }
+  var pl;
+  try{
+    pl=parseJwtPayload(credential);
+  }catch(e){
+    console.error('Google ID token parsing failed:',e);
+    alert('Google sign-in failed. Please try again.');
+    return;
+  }
+  if(!pl||!pl.name){
+    alert('Google sign-in failed. Missing profile information.');
+    return;
+  }
+  var displayName=pl.name;
+  var displayPic=pl.picture||'';
+  googleUser={name:displayName,email:pl.email||'',picture:displayPic};
   document.getElementById('navLoginBtn').style.display='none';
-  document.getElementById('navUserImg').src=pl.picture;
-  document.getElementById('navUserName').textContent=pl.name.split(' ')[0];
+  var navUserImg=document.getElementById('navUserImg');
+  if(displayPic)navUserImg.src=displayPic;else navUserImg.removeAttribute('src');
+  document.getElementById('navUserName').textContent=displayName.split(' ')[0];
   document.getElementById('navUserPill').classList.add('active');
   lsShow(2);
   document.getElementById('lsMsg').textContent='Requesting YouTube access…';
@@ -1406,7 +1435,7 @@ function requestYTToken(){
       alert('YouTube access was denied. TubeIQ needs YouTube access to detect your channel.');
     }
   });
-  tc.requestAccessToken({prompt:''});
+  tc.requestAccessToken({prompt:googleAccessToken?'':'consent'});
 }
 
 async function handleYTToken(tr){
