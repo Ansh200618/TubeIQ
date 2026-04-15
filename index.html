@@ -768,9 +768,16 @@ function applyTheme(mode){
   const effective=mode==='auto'?(prefersDark?'dark':'light'):mode;
   root.setAttribute('data-theme',effective);
 }
+function getEffectiveTheme(){
+  const attr=document.documentElement.getAttribute('data-theme');
+  if(attr==='dark'||attr==='light')return attr;
+  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return prefersDark?'dark':'light';
+}
 function refreshThemeSensitiveUI(){
+  const dashboardEl=document.getElementById('dashboard');
   renderGoogleSignInButton(true);
-  if(channelContext&&document.getElementById('dashboard').style.display==='block')renderCharts(channelContext);
+  if(channelContext&&dashboardEl&&getComputedStyle(dashboardEl).display!=='none')renderCharts(channelContext);
 }
 function setThemeMode(mode){
   themeMode=(mode==='dark'||mode==='light'||mode==='auto')?mode:'auto';
@@ -1390,9 +1397,9 @@ function closeLoginModal(){document.getElementById('loginModal').classList.remov
 function renderGoogleSignInButton(forceRerender){
   var btnEl=document.getElementById('googleSignInBtn');
   if(!btnEl||!window.google)return;
-  if(forceRerender)btnEl.innerHTML='';
+  if(forceRerender)btnEl.textContent='';
   if(btnEl.hasChildNodes())return;
-  var buttonTheme=document.documentElement.getAttribute('data-theme')==='light'?'outline':'filled_black';
+  var buttonTheme=getEffectiveTheme()==='light'?'outline':'filled_black';
   google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken,auto_select:false,cancel_on_tap_outside:false});
   google.accounts.id.renderButton(btnEl,{theme:buttonTheme,size:'large',width:400,text:'signin_with',shape:'rectangular'});
 }
