@@ -439,7 +439,7 @@ footer span{color:var(--red)}
 <nav>
   <div class="nav-logo">Tube<span>IQ</span></div>
   <div class="nav-right">
-    <div class="theme-select" aria-label="Theme mode">NIGHT</div>
+    <div class="theme-select">NIGHT</div>
     <div class="nav-badge">REAL-TIME YOUTUBE ANALYTICS</div>
     <div class="nav-user-pill" id="navUserPill">
       <img id="navUserImg" src="" alt="">
@@ -764,7 +764,6 @@ function getThemePalette(){
 /* ════════════════════════════════
    THEME MODE (NIGHT ONLY)
    ════════════════════════════════ */
-const THEME_KEY='tubeiq-theme-mode';
 function applyDarkTheme(){
   const root=document.documentElement;
   root.setAttribute('data-theme','dark');
@@ -774,14 +773,13 @@ function refreshThemeSensitiveUI(){
   renderGoogleSignInButton(true);
   if(channelContext&&dashboardEl&&getComputedStyle(dashboardEl).display!=='none')renderCharts(channelContext);
 }
-function setThemeMode(){
-  localStorage.setItem(THEME_KEY,'dark');
+function enableDarkMode(){
   applyDarkTheme();
   refreshThemeSensitiveUI();
   announceStatus('Night mode enabled.');
 }
 function initThemeMode(){
-  setThemeMode();
+  enableDarkMode();
 }
 
 /* ════════════════════════════════
