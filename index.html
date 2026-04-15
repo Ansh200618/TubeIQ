@@ -768,13 +768,16 @@ function applyTheme(mode){
   const effective=mode==='auto'?(prefersDark?'dark':'light'):mode;
   root.setAttribute('data-theme',effective);
 }
+function refreshThemeSensitiveUI(){
+  renderGoogleSignInButton(true);
+  if(channelContext&&document.getElementById('dashboard').style.display==='block')renderCharts(channelContext);
+}
 function setThemeMode(mode){
   themeMode=(mode==='dark'||mode==='light'||mode==='auto')?mode:'auto';
   localStorage.setItem(THEME_KEY,themeMode);
   const sel=document.getElementById('themeModeSelect');if(sel)sel.value=themeMode;
   applyTheme(themeMode);
-  renderGoogleSignInButton(true);
-  if(channelContext&&document.getElementById('dashboard').style.display==='block')renderCharts(channelContext);
+  refreshThemeSensitiveUI();
   announceStatus('Theme set to '+themeMode+' mode.');
 }
 function initThemeMode(){
@@ -784,8 +787,7 @@ function initThemeMode(){
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){
       if(themeMode==='auto'){
         applyTheme('auto');
-        renderGoogleSignInButton(true);
-        if(channelContext&&document.getElementById('dashboard').style.display==='block')renderCharts(channelContext);
+        refreshThemeSensitiveUI();
       }
     });
   }
@@ -1390,9 +1392,9 @@ function renderGoogleSignInButton(force){
   if(!btnEl||!window.google)return;
   if(force)btnEl.innerHTML='';
   if(btnEl.hasChildNodes())return;
-  var t=document.documentElement.getAttribute('data-theme')==='light'?'outline':'filled_black';
+  var buttonTheme=document.documentElement.getAttribute('data-theme')==='light'?'outline':'filled_black';
   google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken,auto_select:false,cancel_on_tap_outside:false});
-  google.accounts.id.renderButton(btnEl,{theme:t,size:'large',width:400,text:'signin_with',shape:'rectangular'});
+  google.accounts.id.renderButton(btnEl,{theme:buttonTheme,size:'large',width:400,text:'signin_with',shape:'rectangular'});
 }
 
 function handleGoogleIdToken(resp){
