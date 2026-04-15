@@ -439,11 +439,7 @@ footer span{color:var(--red)}
 <nav>
   <div class="nav-logo">Tube<span>IQ</span></div>
   <div class="nav-right">
-    <select class="theme-select" id="themeModeSelect" onchange="setThemeMode(this.value)">
-      <option value="auto">AUTO</option>
-      <option value="dark">NIGHT</option>
-      <option value="light">DAY</option>
-    </select>
+    <div class="theme-select">NIGHT</div>
     <div class="nav-badge">REAL-TIME YOUTUBE ANALYTICS</div>
     <div class="nav-user-pill" id="navUserPill">
       <img id="navUserImg" src="" alt="">
@@ -569,7 +565,7 @@ footer span{color:var(--red)}
         <div class="wizard-field">
           <label>Content Idea / Topic *</label>
           <textarea class="wizard-input" id="wizTopicInput" rows="3"
-            placeholder="e.g. I filmed myself learning to code an AI chatbot from scratch in 30 days, documenting every step…"></textarea>
+            placeholder="e.g. I filmed myself learning DBMS, SQL, and Power BI in 30 days, documenting every step…"></textarea>
         </div>
         <div class="wizard-row">
           <div class="wizard-field">
@@ -599,7 +595,7 @@ footer span{color:var(--red)}
         </div>
         <div class="wizard-field">
           <label>Any keywords you want to rank for? (optional)</label>
-          <input type="text" class="wizard-input" id="wizKeywords" placeholder="e.g. AI coding, beginner programming, learn python 2025">
+          <input type="text" class="wizard-input" id="wizKeywords" placeholder="e.g. DBMS, SQL joins, Power BI dashboard">
         </div>
         <button class="btn-generate" id="generateBtn" onclick="generateRecommendations()">GENERATE FULL VIDEO PACKAGE →</button>
       </div>
@@ -725,7 +721,7 @@ const YT = 'https://www.googleapis.com/youtube/v3';
 
 const NICHES = {
   'Entertainment':        {icon:'🎬',tags:['Comedy','Vlogs','Challenges','Shorts','Reacts']},
-  'Science & Technology': {icon:'🔬',tags:['Tutorials','Reviews','Deep Dives','Explainers','AI']},
+  'Science & Technology': {icon:'🔬',tags:['Tutorials','Reviews','DBMS','SQL','Power BI']},
   'Gaming':               {icon:'🎮',tags:["Let's Play",'Reviews','Streams','Walkthroughs','News']},
   'Education':            {icon:'📚',tags:['How-to','Explainers','Lectures','Concepts','Documentaries']},
   'Music':                {icon:'🎵',tags:['Covers','Originals','Reactions','Reviews','Tutorials']},
@@ -749,7 +745,6 @@ let googleAccessToken = null;
 let ownerChannels     = [];
 let chatHistory    = [];
 let isOwnChannel   = false;  // true only when viewing the owner's own channel
-let themeMode      = 'auto';
 
 // ── Utils ──
 function fmtNum(n){n=parseInt(n)||0;if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
@@ -767,45 +762,24 @@ function getThemePalette(){
 }
 
 /* ════════════════════════════════
-   THEME MODE (DAY / NIGHT / AUTO)
+   THEME MODE (NIGHT ONLY)
    ════════════════════════════════ */
-const THEME_KEY='tubeiq-theme-mode';
-function applyTheme(mode){
+function applyDarkTheme(){
   const root=document.documentElement;
-  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const effective=mode==='auto'?(prefersDark?'dark':'light'):mode;
-  root.setAttribute('data-theme',effective);
-}
-function getEffectiveTheme(){
-  const attr=document.documentElement.getAttribute('data-theme');
-  if(attr==='dark'||attr==='light')return attr;
-  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
-  return prefersDark?'dark':'light';
+  root.setAttribute('data-theme','dark');
 }
 function refreshThemeSensitiveUI(){
   const dashboardEl=document.getElementById('dashboard');
   renderGoogleSignInButton(true);
   if(channelContext&&dashboardEl&&getComputedStyle(dashboardEl).display!=='none')renderCharts(channelContext);
 }
-function setThemeMode(mode){
-  themeMode=(mode==='dark'||mode==='light'||mode==='auto')?mode:'auto';
-  localStorage.setItem(THEME_KEY,themeMode);
-  const sel=document.getElementById('themeModeSelect');if(sel)sel.value=themeMode;
-  applyTheme(themeMode);
+function enableDarkMode(){
+  applyDarkTheme();
   refreshThemeSensitiveUI();
-  announceStatus('Theme set to '+themeMode+' mode.');
+  announceStatus('Night mode enabled.');
 }
 function initThemeMode(){
-  const saved=localStorage.getItem(THEME_KEY)||'auto';
-  setThemeMode(saved);
-  if(window.matchMedia){
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',function(){
-      if(themeMode==='auto'){
-        applyTheme('auto');
-        refreshThemeSensitiveUI();
-      }
-    });
-  }
+  enableDarkMode();
 }
 
 /* ════════════════════════════════
@@ -1404,7 +1378,7 @@ function renderGoogleSignInButton(shouldReRender){
   if(!btnEl||!window.google)return;
   if(shouldReRender)btnEl.textContent='';
   if(btnEl.hasChildNodes())return;
-  var buttonTheme=getEffectiveTheme()==='light'?'outline':'filled_black';
+  var buttonTheme='filled_black';
   google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken,auto_select:false,cancel_on_tap_outside:false});
   google.accounts.id.renderButton(btnEl,{theme:buttonTheme,size:'large',width:400,text:'signin_with',shape:'rectangular'});
 }
