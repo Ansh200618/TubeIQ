@@ -1384,9 +1384,10 @@ function renderGoogleSignInButton(shouldReRender){
 }
 
 function parseJwtPayload(token){
-  if(!token||typeof token!=='string')throw new Error('Missing credential token');
+  if(!token)throw new Error('Credential token is required');
+  if(typeof token!=='string')throw new Error('Credential token must be a string');
   var parts=token.split('.');
-  if(parts.length<2)throw new Error('Invalid credential format');
+  if(parts.length<2)throw new Error('JWT token must contain header and payload sections');
   var b64=parts[1].replace(/-/g,'+').replace(/_/g,'/');
   while(b64.length%4)b64+='=';
   return JSON.parse(atob(b64));
@@ -1400,7 +1401,7 @@ function handleGoogleIdToken(resp){
     alert('Google sign-in failed. Please try again.');
     return;
   }
-  var displayName=(pl&&pl.name)||'User';
+  var displayName=(pl&&pl.name)||'Unknown User';
   var displayPic=(pl&&pl.picture)||'';
   googleUser={name:displayName,email:(pl&&pl.email)||'',picture:displayPic};
   document.getElementById('navLoginBtn').style.display='none';
