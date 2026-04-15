@@ -1394,15 +1394,24 @@ function parseJwtPayload(token){
 }
 
 function handleGoogleIdToken(resp){
+  var credential=resp&&resp.credential;
+  if(!credential){
+    alert('Google sign-in failed. Missing credential response.');
+    return;
+  }
   var pl;
   try{
-    pl=parseJwtPayload(resp&&resp.credential);
+    pl=parseJwtPayload(credential);
   }catch(e){
     console.error('Google ID token parsing failed:',e);
     alert('Google sign-in failed. Please try again.');
     return;
   }
-  var displayName=(pl&&pl.name)||'Unknown User';
+  if(!pl||!pl.name){
+    alert('Google sign-in failed. Missing profile information.');
+    return;
+  }
+  var displayName=pl.name;
   var displayPic=(pl&&pl.picture)||'';
   googleUser={name:displayName,email:(pl&&pl.email)||'',picture:displayPic};
   document.getElementById('navLoginBtn').style.display='none';
