@@ -6,18 +6,7 @@
 <title>TubeIQ — YouTube Channel Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js">
-/* ════════════════════════════════
-   API KEY MANAGEMENT
-   ════════════════════════════════ */
-  if(!raw.startsWith('sk-ant-')){ setKeyMsg('❌ Invalid format — must start with sk-ant-', 'var(--red)'); return; }
-  var btn = document.getElementById('saveKeyBtn');
-  btn.textContent = 'TESTING…'; btn.disabled = true;
-  setKeyMsg('Testing key…', 'var(--gold)');
-
-}
-
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
@@ -700,8 +689,7 @@ const API_KEY = 'AIzaSyAY6dcunw97THYJ42Y6VuCckOjlUP05Fpc';
 // 2. Google OAuth Client ID — get from console.cloud.google.com
 //    Replace with your own, then Google Login will work
 const G_CLIENT = '574845010481-hiu0cmuml49cv869uupfgefcd69enbkp.apps.googleusercontent.com';
-// 3. Anthropic API key for the AI chatbot
-//    Get from console.anthropic.com — used in chatbot only
+// 3. Gemini API key for AI features (stored in split form)
 var _gk1='AIzaSyAxWuWntzZjSX9',_gk2='ZQ4N12fKIH1NvyDpzTG8';
 function getGemKey(){return _gk1+_gk2}
 // ──────────────────────────────────────────────────
@@ -1470,13 +1458,6 @@ function renderCompare(a,b){
   if(!insights.length)insights.push({icon:'📊',text:'Both channels are closely matched. Check Apriori patterns for the key differentiator.'});
   document.getElementById('cmpInsights').innerHTML=insights.map(function(i){return '<div class="cmp-insight-item"><span style="flex-shrink:0">'+i.icon+'</span><div>'+i.text+'</div></div>';}).join('');
 }
-
-/* ════════════════════════════════
-   API KEY MANAGEMENT
-   ════════════════════════════════ */
-function closeKeyModal(){document.getElementById('keyModal').classList.remove('open')}
-function setKeyMsg(msg,color){var el=document.getElementById('keyStatusMsg');el.textContent=msg;el.style.color=color||'var(--text2)';}
-function clearApiKey(){setAnthKey('');document.getElementById('anthKeyInput').value='';setKeyMsg('Key cleared.','var(--gold)');}
 
 </script>
 </body>
