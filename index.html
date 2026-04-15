@@ -1398,6 +1398,7 @@ function handleGoogleIdToken(resp){
   try{
     pl=parseJwtPayload(resp&&resp.credential);
   }catch(e){
+    console.error('Google ID token parsing failed:',e);
     alert('Google sign-in failed. Please try again.');
     return;
   }
