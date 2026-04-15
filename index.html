@@ -439,9 +439,7 @@ footer span{color:var(--red)}
 <nav>
   <div class="nav-logo">Tube<span>IQ</span></div>
   <div class="nav-right">
-    <select class="theme-select" id="themeModeSelect" onchange="setThemeMode(this.value)">
-      <option value="dark">NIGHT</option>
-    </select>
+    <div class="theme-select" aria-label="Theme mode">NIGHT</div>
     <div class="nav-badge">REAL-TIME YOUTUBE ANALYTICS</div>
     <div class="nav-user-pill" id="navUserPill">
       <img id="navUserImg" src="" alt="">
@@ -747,7 +745,6 @@ let googleAccessToken = null;
 let ownerChannels     = [];
 let chatHistory    = [];
 let isOwnChannel   = false;  // true only when viewing the owner's own channel
-let themeMode      = 'dark';
 
 // ── Utils ──
 function fmtNum(n){n=parseInt(n)||0;if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
@@ -768,28 +765,23 @@ function getThemePalette(){
    THEME MODE (NIGHT ONLY)
    ════════════════════════════════ */
 const THEME_KEY='tubeiq-theme-mode';
-function applyTheme(){
+function applyDarkTheme(){
   const root=document.documentElement;
   root.setAttribute('data-theme','dark');
-}
-function getEffectiveTheme(){
-  return 'dark';
 }
 function refreshThemeSensitiveUI(){
   const dashboardEl=document.getElementById('dashboard');
   renderGoogleSignInButton(true);
   if(channelContext&&dashboardEl&&getComputedStyle(dashboardEl).display!=='none')renderCharts(channelContext);
 }
-function setThemeMode(mode){
-  themeMode='dark';
-  localStorage.setItem(THEME_KEY,themeMode);
-  const sel=document.getElementById('themeModeSelect');if(sel)sel.value=themeMode;
-  applyTheme();
+function setThemeMode(){
+  localStorage.setItem(THEME_KEY,'dark');
+  applyDarkTheme();
   refreshThemeSensitiveUI();
   announceStatus('Night mode enabled.');
 }
 function initThemeMode(){
-  setThemeMode(localStorage.getItem(THEME_KEY)||'dark');
+  setThemeMode();
 }
 
 /* ════════════════════════════════
@@ -1388,7 +1380,7 @@ function renderGoogleSignInButton(shouldReRender){
   if(!btnEl||!window.google)return;
   if(shouldReRender)btnEl.textContent='';
   if(btnEl.hasChildNodes())return;
-  var buttonTheme=getEffectiveTheme()==='light'?'outline':'filled_black';
+  var buttonTheme='filled_black';
   google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken,auto_select:false,cancel_on_tap_outside:false});
   google.accounts.id.renderButton(btnEl,{theme:buttonTheme,size:'large',width:400,text:'signin_with',shape:'rectangular'});
 }
