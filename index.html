@@ -1172,6 +1172,17 @@ async function callGeminiAPI(payload){
   }
   throw new Error(lastErr);
 }
+function formatGeminiErrorForUser(rawMessage){
+  const msg=String(rawMessage||'Unknown error');
+  const isApiEnablementError=/api has not been used in project|is disabled|service_disabled|accessnotconfigured/i.test(msg)
+    &&/generativelanguage|gemini|generative language/i.test(msg);
+  if(isApiEnablementError){
+    const consoleUrlMatch=msg.match(/https?:\/\/\S+/);
+    const consoleUrl=consoleUrlMatch?consoleUrlMatch[0].replace(/[),.]+$/,''):'https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview';
+    return 'Gemini API is not enabled for this project. Enable Generative Language API in Google Cloud Console ('+consoleUrl+'), wait a few minutes, then retry.';
+  }
+  return 'Could not reach Gemini AI. Error: '+msg+'. Please try again.';
+}
 function extractJSONArray(text){
   const s=text.replace(/```json|```/g,'').trim();
   try{
@@ -1414,7 +1425,7 @@ async function sendChat(){
   }catch(e){
     showTyping(false);
     var emsg=(e&&e.message)?e.message:String(e);
-    addBotMsg('⚠️ Could not reach Gemini AI. Error: '+emsg+'. Please try again.');
+    addBotMsg('⚠️ '+formatGeminiErrorForUser(emsg));
   }
   document.getElementById('chatSendBtn').disabled=false;
 }
