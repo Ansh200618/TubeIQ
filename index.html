@@ -1174,11 +1174,13 @@ async function callGeminiAPI(payload){
 }
 function formatGeminiErrorForUser(rawMessage){
   const msg=String(rawMessage||'Unknown error');
-  const isApiEnablementError=/api has not been used in project|is disabled|service_disabled|accessnotconfigured/i.test(msg)
-    &&/generativelanguage|gemini|generative language/i.test(msg);
+  const API_ENABLEMENT_ERROR_PATTERN=/api has not been used in project|is disabled|service_disabled|accessnotconfigured/i;
+  const GEMINI_SERVICE_PATTERN=/generativelanguage|gemini|generative language/i;
+  const DEFAULT_GEMINI_CONSOLE_URL='https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview';
+  const isApiEnablementError=API_ENABLEMENT_ERROR_PATTERN.test(msg)&&GEMINI_SERVICE_PATTERN.test(msg);
   if(isApiEnablementError){
     const consoleUrlMatch=msg.match(/https?:\/\/\S+/);
-    const consoleUrl=consoleUrlMatch?consoleUrlMatch[0].replace(/[),.]+$/,''):'https://console.developers.google.com/apis/api/generativelanguage.googleapis.com/overview';
+    const consoleUrl=consoleUrlMatch?consoleUrlMatch[0].replace(/[),.]+$/,''):DEFAULT_GEMINI_CONSOLE_URL;
     return 'Gemini API is not enabled for this project. Enable Generative Language API in Google Cloud Console ('+consoleUrl+'), wait a few minutes, then retry.';
   }
   return 'Could not reach Gemini AI. Error: '+msg+'. Please try again.';
