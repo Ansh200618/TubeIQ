@@ -719,6 +719,7 @@ function getGemKey(){return _gk1+_gk2}
 
 const YT = 'https://www.googleapis.com/youtube/v3';
 const YT_READONLY_SCOPE = 'https://www.googleapis.com/auth/youtube.readonly';
+const MIN_CONFIG_KEY_LENGTH = 20;
 
 const NICHES = {
   'Entertainment':        {icon:'🎬',tags:['Comedy','Vlogs','Challenges','Shorts','Reacts']},
@@ -764,8 +765,8 @@ function getThemePalette(){
 function hasConfiguredGoogleClientId(){
   return !!(G_CLIENT&&/\.apps\.googleusercontent\.com$/.test(G_CLIENT));
 }
-function hasConfiguredYouTubeApiKey(){return !!(API_KEY&&API_KEY.length>20)}
-function hasConfiguredGeminiApiKey(){return !!(getGemKey()&&getGemKey().length>20)}
+function hasConfiguredYouTubeApiKey(){return !!(API_KEY&&API_KEY.length>MIN_CONFIG_KEY_LENGTH)}
+function hasConfiguredGeminiApiKey(){return !!(getGemKey()&&getGemKey().length>MIN_CONFIG_KEY_LENGTH)}
 function isSecureAppOrigin(){
   var host=window.location.hostname;
   return window.location.protocol==='https:'||host==='localhost'||host==='127.0.0.1';
