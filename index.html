@@ -766,12 +766,12 @@ function hasConfiguredGoogleClientId(){
   return !!(G_CLIENT&&/\.apps\.googleusercontent\.com$/.test(G_CLIENT));
 }
 function hasConfiguredYouTubeApiKey(){return !!(API_KEY&&API_KEY.length>MIN_CONFIG_KEY_LENGTH)}
-function hasConfiguredGeminiApiKey(){return !!(getGemKey()&&getGemKey().length>MIN_CONFIG_KEY_LENGTH)}
+function hasConfiguredGeminiApiKey(){var key=getGemKey();return !!(key&&key.length>MIN_CONFIG_KEY_LENGTH)}
 function isSecureAppOrigin(){
   var host=window.location.hostname;
-  return window.location.protocol==='https:'||host==='localhost'||host==='127.0.0.1';
+  return window.location.protocol==='https:'||host==='localhost'||host==='127.0.0.1'||host==='::1';
 }
-function getGoogleSetupIssue(){
+function getGoogleSetupError(){
   if(!hasConfiguredGoogleClientId())return 'Google OAuth client ID is not configured. Set G_CLIENT in index.html (CONFIG section).';
   if(!isSecureAppOrigin())return 'Google Login requires https:// or localhost. Open TubeIQ from localhost/HTTPS (not file://).';
   return '';
@@ -1410,7 +1410,7 @@ async function sendChat(){
 function lsShow(n){[1,2,3,4].forEach(function(i){document.getElementById('ls'+i).style.display=i===n?'block':'none';})}
 
 function openLoginModal(){
-  var setupIssue=getGoogleSetupIssue();
+  var setupIssue=getGoogleSetupError();
   if(setupIssue){alert(setupIssue);return}
   document.getElementById('loginModal').classList.add('open');
   lsShow(1);
@@ -1420,7 +1420,7 @@ function closeLoginModal(){document.getElementById('loginModal').classList.remov
 function renderGoogleSignInButton(shouldReRender){
   var btnEl=document.getElementById('googleSignInBtn');
   if(!btnEl||!window.google)return;
-  if(getGoogleSetupIssue())return;
+  if(getGoogleSetupError())return;
   if(shouldReRender)btnEl.textContent='';
   if(btnEl.hasChildNodes())return;
   var buttonTheme='filled_black';
@@ -1470,7 +1470,7 @@ function handleGoogleIdToken(resp){
 }
 
 function requestYTToken(){
-  var setupIssue=getGoogleSetupIssue();
+  var setupIssue=getGoogleSetupError();
   if(setupIssue){logoutGoogle();closeLoginModal();alert(setupIssue);return}
   if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){setTimeout(requestYTToken,600);return}
   var tc=google.accounts.oauth2.initTokenClient({
@@ -1533,7 +1533,7 @@ function logoutGoogle(){
 
 window.addEventListener('load',function(){
   initThemeMode();
-  var setupIssue=getGoogleSetupIssue();
+  var setupIssue=getGoogleSetupError();
   if(setupIssue)console.warn(setupIssue);
   if(window.google&&hasConfiguredGoogleClientId())google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken});
 });
