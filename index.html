@@ -707,17 +707,18 @@ footer span{color:var(--red)}
    ══════════════════════════════════════════════════ */
 
 // ─── CONFIG ───────────────────────────────────────
-// 1. YouTube Data API key (already set)
+// 1. YouTube Data API key
 const API_KEY = 'AIzaSyAY6dcunw97THYJ42Y6VuCckOjlUP05Fpc';
-// 2. Google OAuth Client ID — get from console.cloud.google.com
-//    Replace with your own, then Google Login will work
-const G_CLIENT = '574845010481-hiu0cmuml49cv869uupfgefcd69enbkp.apps.googleusercontent.com';
+// 2. Google OAuth Client ID (Web app) from console.cloud.google.com
+//    Replace placeholder with your own OAuth client to enable Google Login
+const G_CLIENT = 'YOUR_NEW_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com';
 // 3. Gemini API key for AI features (stored in split form)
 var _gk1='AIzaSyAxWuWntzZjSX9',_gk2='ZQ4N12fKIH1NvyDpzTG8';
 function getGemKey(){return _gk1+_gk2}
 // ──────────────────────────────────────────────────
 
 const YT = 'https://www.googleapis.com/youtube/v3';
+const YT_READONLY_SCOPE = 'https://www.googleapis.com/auth/youtube.readonly';
 
 const NICHES = {
   'Entertainment':        {icon:'🎬',tags:['Comedy','Vlogs','Challenges','Shorts','Reacts']},
@@ -759,6 +760,18 @@ function getThemePalette(){
     strongGridLineColor:getThemeVar('--grid-line-strong','rgba(255,255,255,0.07)'),
     panelBackgroundColor:getThemeVar('--bg2','#0d1220')
   };
+}
+function hasConfiguredGoogleClientId(){
+  return !!(G_CLIENT&&G_CLIENT.indexOf('YOUR_NEW_GOOGLE_OAUTH_CLIENT_ID')===-1&&/\.apps\.googleusercontent\.com$/.test(G_CLIENT));
+}
+function isSecureAppOrigin(){
+  var host=window.location.hostname;
+  return window.location.protocol==='https:'||host==='localhost'||host==='127.0.0.1';
+}
+function getGoogleSetupIssue(){
+  if(!hasConfiguredGoogleClientId())return 'Google OAuth client ID is not configured. Add your new OAuth client ID in the TubeIQ config.';
+  if(!isSecureAppOrigin())return 'Google Login requires https:// or localhost. Open TubeIQ from localhost/HTTPS (not file://).';
+  return '';
 }
 
 /* ════════════════════════════════
@@ -1392,6 +1405,8 @@ async function sendChat(){
 function lsShow(n){[1,2,3,4].forEach(function(i){document.getElementById('ls'+i).style.display=i===n?'block':'none';})}
 
 function openLoginModal(){
+  var setupIssue=getGoogleSetupIssue();
+  if(setupIssue){alert(setupIssue);return}
   document.getElementById('loginModal').classList.add('open');
   lsShow(1);
   renderGoogleSignInButton(false);
@@ -1400,6 +1415,7 @@ function closeLoginModal(){document.getElementById('loginModal').classList.remov
 function renderGoogleSignInButton(shouldReRender){
   var btnEl=document.getElementById('googleSignInBtn');
   if(!btnEl||!window.google)return;
+  if(getGoogleSetupIssue())return;
   if(shouldReRender)btnEl.textContent='';
   if(btnEl.hasChildNodes())return;
   var buttonTheme='filled_black';
@@ -1449,10 +1465,12 @@ function handleGoogleIdToken(resp){
 }
 
 function requestYTToken(){
+  var setupIssue=getGoogleSetupIssue();
+  if(setupIssue){logoutGoogle();closeLoginModal();alert(setupIssue);return}
   if(!window.google||!window.google.accounts||!window.google.accounts.oauth2){setTimeout(requestYTToken,600);return}
   var tc=google.accounts.oauth2.initTokenClient({
     client_id:G_CLIENT,
-    scope:'https://www.googleapis.com/auth/youtube.readonly',
+    scope:YT_READONLY_SCOPE,
     callback:handleYTToken,
     error_callback:function(e){
       logoutGoogle();closeLoginModal();
@@ -1510,7 +1528,9 @@ function logoutGoogle(){
 
 window.addEventListener('load',function(){
   initThemeMode();
-  if(window.google&&G_CLIENT)google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken});
+  var setupIssue=getGoogleSetupIssue();
+  if(setupIssue)console.warn(setupIssue);
+  if(window.google&&hasConfiguredGoogleClientId())google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken});
 });
 
 /* ════════════════════════════════
