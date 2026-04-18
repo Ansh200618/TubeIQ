@@ -707,13 +707,13 @@ footer span{color:var(--red)}
    ══════════════════════════════════════════════════ */
 
 // ─── CONFIG ───────────────────────────────────────
-// 1. YouTube Data API key
-const API_KEY = 'AIzaSyAY6dcunw97THYJ42Y6VuCckOjlUP05Fpc';
+// 1. YouTube Data API key (replace with your own key)
+const API_KEY = '';
 // 2. Google OAuth Client ID (Web app) from console.cloud.google.com
 //    Replace placeholder with your own OAuth client to enable Google Login
 const G_CLIENT = '';
-// 3. Gemini API key for AI features (stored in split form)
-var _gk1='AIzaSyAxWuWntzZjSX9',_gk2='ZQ4N12fKIH1NvyDpzTG8';
+// 3. Gemini API key for AI features
+var _gk1='',_gk2='';
 function getGemKey(){return _gk1+_gk2}
 // ──────────────────────────────────────────────────
 
@@ -764,12 +764,14 @@ function getThemePalette(){
 function hasConfiguredGoogleClientId(){
   return !!(G_CLIENT&&/\.apps\.googleusercontent\.com$/.test(G_CLIENT));
 }
+function hasConfiguredYouTubeApiKey(){return !!(API_KEY&&API_KEY.length>20)}
+function hasConfiguredGeminiApiKey(){return !!(getGemKey()&&getGemKey().length>20)}
 function isSecureAppOrigin(){
   var host=window.location.hostname;
   return window.location.protocol==='https:'||host==='localhost'||host==='127.0.0.1';
 }
 function getGoogleSetupIssue(){
-  if(!hasConfiguredGoogleClientId())return 'Google OAuth client ID is not configured. Add your new OAuth client ID in the TubeIQ config.';
+  if(!hasConfiguredGoogleClientId())return 'Google OAuth client ID is not configured. Set G_CLIENT in index.html (CONFIG section).';
   if(!isSecureAppOrigin())return 'Google Login requires https:// or localhost. Open TubeIQ from localhost/HTTPS (not file://).';
   return '';
 }
@@ -799,6 +801,7 @@ function initThemeMode(){
    YOUTUBE API
    ════════════════════════════════ */
 async function ytFetch(ep,params){
+  if(!hasConfiguredYouTubeApiKey())throw new Error('YouTube API key is missing. Set API_KEY in index.html (CONFIG section).');
   const u=new URL(YT+'/'+ep);
   Object.entries({...params,key:API_KEY}).forEach(([k,v])=>u.searchParams.set(k,v));
   const r=await fetch(u.toString());const j=await r.json();
@@ -1107,6 +1110,7 @@ function exportPowerBIData(){
    (owner's channel only)
    ════════════════════════════════ */
 async function callGeminiAPI(payload){
+  if(!hasConfiguredGeminiApiKey())throw new Error('Gemini API key is missing. Set _gk1/_gk2 (or getGemKey) in index.html (CONFIG section).');
   async function resolveGenerateContentModels(forceRefresh){
     if(!forceRefresh&&window.__tubeiqGeminiModels&&window.__tubeiqGeminiModels.length)return window.__tubeiqGeminiModels;
     const fallback=['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-1.5-flash-latest','gemini-1.5-flash-8b-latest'];
