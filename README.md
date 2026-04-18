@@ -45,7 +45,7 @@ TubeIQ/
    - APIs & Services → Credentials → Create Credentials → OAuth client ID
    - Type: **Web application**
    - Add Authorized JavaScript origins:
-     - `http://localhost:<port>`
+     - `http://localhost:<port>` (replace `<port>` with your real local port, e.g. `3000`, `5500`, `8080`)
      - your deployed domain (exact origin)
    - Add redirect URIs only if your flow requires it
 5. Copy your new client ID and replace:

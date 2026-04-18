@@ -762,17 +762,22 @@ function getThemePalette(){
     panelBackgroundColor:getThemeVar('--bg2','#0d1220')
   };
 }
-function hasConfiguredGoogleClientId(){
+function isValidGoogleClientId(){
   return !!(G_CLIENT&&/\.apps\.googleusercontent\.com$/.test(G_CLIENT));
 }
-function hasConfiguredYouTubeApiKey(){return !!(API_KEY&&API_KEY.length>MIN_CONFIG_KEY_LENGTH)}
-function hasConfiguredGeminiApiKey(){var key=getGemKey();return !!(key&&key.length>MIN_CONFIG_KEY_LENGTH)}
+function hasConfiguredYouTubeApiKey(){
+  return !!(API_KEY&&API_KEY.length>MIN_CONFIG_KEY_LENGTH);
+}
+function hasConfiguredGeminiApiKey(){
+  var key=getGemKey();
+  return !!(key&&key.length>MIN_CONFIG_KEY_LENGTH);
+}
 function isSecureAppOrigin(){
   var host=window.location.hostname;
   return window.location.protocol==='https:'||host==='localhost'||host==='127.0.0.1'||host==='::1';
 }
 function getGoogleSetupError(){
-  if(!hasConfiguredGoogleClientId())return 'Google OAuth client ID is not configured. Set G_CLIENT in index.html (CONFIG section).';
+  if(!isValidGoogleClientId())return 'Google OAuth client ID is not configured. Set G_CLIENT in index.html (CONFIG section).';
   if(!isSecureAppOrigin())return 'Google Login requires https:// or localhost. Open TubeIQ from localhost/HTTPS (not file://).';
   return '';
 }
@@ -1535,7 +1540,7 @@ window.addEventListener('load',function(){
   initThemeMode();
   var setupIssue=getGoogleSetupError();
   if(setupIssue)console.warn(setupIssue);
-  if(window.google&&hasConfiguredGoogleClientId())google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken});
+  if(window.google&&isValidGoogleClientId())google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken});
 });
 
 /* ════════════════════════════════
