@@ -711,7 +711,7 @@ footer span{color:var(--red)}
 const API_KEY = 'AIzaSyAY6dcunw97THYJ42Y6VuCckOjlUP05Fpc';
 // 2. Google OAuth Client ID (Web app) from console.cloud.google.com
 //    Replace placeholder with your own OAuth client to enable Google Login
-const G_CLIENT = 'YOUR_NEW_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com';
+const G_CLIENT = '';
 // 3. Gemini API key for AI features (stored in split form)
 var _gk1='AIzaSyAxWuWntzZjSX9',_gk2='ZQ4N12fKIH1NvyDpzTG8';
 function getGemKey(){return _gk1+_gk2}
@@ -762,7 +762,7 @@ function getThemePalette(){
   };
 }
 function hasConfiguredGoogleClientId(){
-  return !!(G_CLIENT&&G_CLIENT.indexOf('YOUR_NEW_GOOGLE_OAUTH_CLIENT_ID')===-1&&/\.apps\.googleusercontent\.com$/.test(G_CLIENT));
+  return !!(G_CLIENT&&/\.apps\.googleusercontent\.com$/.test(G_CLIENT));
 }
 function isSecureAppOrigin(){
   var host=window.location.hostname;

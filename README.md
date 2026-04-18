@@ -27,7 +27,7 @@ TubeIQ/
 ## Getting Started
 
 1. Clone the repository.
-2. Configure required API credentials in `/home/runner/work/TubeIQ/TubeIQ/index.html`.
+2. Configure required API credentials in `index.html`.
 3. Serve the app from `http://localhost` or an `https://` domain (do not open with `file://`).
 
 ## Google Login + YouTube API Setup (new OAuth)
@@ -49,7 +49,7 @@ TubeIQ/
      - your deployed domain (exact origin)
    - Add redirect URIs only if your flow requires it
 5. Copy your new client ID and replace:
-   - `const G_CLIENT = 'YOUR_NEW_GOOGLE_OAUTH_CLIENT_ID.apps.googleusercontent.com';`
+   - `const G_CLIENT = 'YOUR_CLIENT_ID.apps.googleusercontent.com';`
 6. Verify API key restrictions:
    - Restrict key to **YouTube Data API v3**
    - Add HTTP referrer restrictions for your app domain(s)
