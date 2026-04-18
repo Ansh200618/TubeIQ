@@ -36,6 +36,25 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
   background-size:256px;pointer-events:none}
 
+/* CUSTOM ALERT */
+.custom-alert {
+  position: fixed; top: 24px; left: 50%; transform: translateX(-50%) translateY(-20px);
+  background: var(--bg2); border: 1px solid var(--red); color: var(--text);
+  padding: 16px 24px; border-radius: var(--radius-sm); z-index: 9999;
+  box-shadow: 0 8px 32px rgba(255,45,45,0.2); opacity: 0; pointer-events: none;
+  transition: all 0.3s ease; display: flex; align-items: center; gap: 12px;
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500;
+}
+.custom-alert.show {
+  opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto;
+}
+.custom-alert-icon { font-size: 20px; }
+.custom-alert-close {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 16px; margin-left: auto; transition: color 0.2s;
+}
+.custom-alert-close:hover { color: var(--text); }
+
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
   padding:0 40px;height:64px;background:var(--nav-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
@@ -359,7 +378,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .health-item.err .health-fix{color:var(--red)} .health-item.warn .health-fix{color:var(--gold)}
 .health-fix:hover{text-decoration:underline}
 
-
 /* COMPARE MODAL */
 .cmp-overlay{display:none;position:fixed;inset:0;z-index:400;
   background:var(--overlay-bg);backdrop-filter:blur(12px);
@@ -455,6 +473,13 @@ footer a:hover{text-decoration:underline}
   </div>
 </nav>
 
+<!-- CUSTOM ALERT -->
+<div class="custom-alert" id="customAlert">
+  <span class="custom-alert-icon">⚠️</span>
+  <span id="customAlertMsg">Error message</span>
+  <button class="custom-alert-close" onclick="closeAlert()">✕</button>
+</div>
+
 <!-- HERO -->
 <section id="hero">
   <div class="hero-glow"></div>
@@ -467,7 +492,7 @@ footer a:hover{text-decoration:underline}
         onkeydown="if(event.key==='Enter')startAnalysis()">
       <button class="btn-analyze" onclick="startAnalysis()">ANALYZE →</button>
     </div>
-    <p class="hint">Try: <a href="#" aria-label="Load MrBeast channel demo" onclick="demoLoad('UCX6OQ3DkcsbYNE6H8uQQuVA');return false;">@MrBeast</a> · <a href="#" aria-label="Load Veritasium channel demo" onclick="demoLoad('UCHnyfMqiRRG1u-2MsSQLbXA');return false;">@Veritasium</a> · <a href="#" aria-label="Load Linus Tech Tips channel demo" onclick="demoLoad('UCXuqSBlHAE6Xw-yeJA0Tunw');return false;">@LinusTechTips</a></p>
+    <p class="hint">Try: <a href="#" aria-label="Load Rojana Bhakti channel demo" onclick="demoLoad('@rojanabhaktii');return false;">@rojanabhaktii</a> · <a href="#" aria-label="Load MrBeast channel demo" onclick="demoLoad('UCX6OQ3DkcsbYNE6H8uQQuVA');return false;">@MrBeast</a> · <a href="#" aria-label="Load Veritasium channel demo" onclick="demoLoad('UCHnyfMqiRRG1u-2MsSQLbXA');return false;">@Veritasium</a> · <a href="#" aria-label="Load Linus Tech Tips channel demo" onclick="demoLoad('UCXuqSBlHAE6Xw-yeJA0Tunw');return false;">@LinusTechTips</a></p>
   </div>
   <div class="hero-divider"><span>OR ANALYZE YOUR OWN CHANNEL</span></div>
   <button class="btn-google-login" onclick="openLoginModal()">
@@ -696,10 +721,6 @@ footer a:hover{text-decoration:underline}
   </div>
 </div>
 
-
-
-
-
 <footer>TubeIQ · YouTube Channel Intelligence · Built with <span>♥</span> using Gemini AI · YouTube Data API v3 · <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> · <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a></footer>
 
 <script>
@@ -709,13 +730,12 @@ footer a:hover{text-decoration:underline}
    ══════════════════════════════════════════════════ */
 
 // ─── CONFIG ───────────────────────────────────────
-// 1. YouTube Data API key (already set)
-const API_KEY = 'AIzaSyDym8UEmgXujrnG1BbhtyryvfSXtSo0Ziw';
-// 2. Google OAuth Client ID — get from console.cloud.google.com
-//    Replace with your own, then Google Login will work
-const G_CLIENT = '163475963534-3p42dpra43s93p1ksqf4ki0158jqav1.apps.googleusercontent.com';
+// 1. YouTube Data API key
+const API_KEY = 'AIzaSyCIOYmplbs1CltAdSyb9SrO3BoPNprRotQ';
+// 2. Google OAuth Client ID
+const G_CLIENT = '911047484261-34u4ads73ertbck2dp7pbb1vm4qhmqtn.apps.googleusercontent.com';
 // 3. Gemini API key for AI features (stored in split form)
-var _gk1='AIzaSyDym8UEmgXujrn',_gk2='G1BbhtyryvfSXtSo0Ziw';
+var _gk1='AIzaSyCIOYmplbs1CltA',_gk2='dSyb9SrO3BoPNprRotQ';
 function getGemKey(){return _gk1+_gk2}
 // ──────────────────────────────────────────────────
 
@@ -747,6 +767,19 @@ let googleAccessToken = null;
 let ownerChannels     = [];
 let chatHistory    = [];
 let isOwnChannel   = false;  // true only when viewing the owner's own channel
+
+// ── Custom Alert Logic ──
+let alertTimeout;
+function showAlert(msg) {
+  const alertEl = document.getElementById('customAlert');
+  document.getElementById('customAlertMsg').textContent = msg;
+  alertEl.classList.add('show');
+  clearTimeout(alertTimeout);
+  alertTimeout = setTimeout(closeAlert, 5000);
+}
+function closeAlert() {
+  document.getElementById('customAlert').classList.remove('show');
+}
 
 // ── Utils ──
 function fmtNum(n){n=parseInt(n)||0;if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toString()}
@@ -945,7 +978,7 @@ async function startAnalysis(){
     hideLoading();renderDashboard(data);
   }catch(err){
     hideLoading();document.getElementById('hero').style.display='flex';
-    alert('⚠️ '+err.message);
+    showAlert(err.message);
   }
 }
 
@@ -1077,7 +1110,7 @@ function renderCharts(d){
       plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:12,pointStyle:'circle',usePointStyle:true,font:{size:11}}}}}});
 }
 function exportPowerBIData(){
-  if(!channelContext){alert('Analyze a channel first.');return}
+  if(!channelContext){showAlert('Analyze a channel first.');return}
   const d=channelContext;
   const rows=(d.labels||[]).map(function(lbl,i){
     return [lbl,d.engagementData?.[i]??0,d.videosData?.[i]??0,d.viewsData?.[i]??0,d.likesData?.[i]??0].join(',');
@@ -1165,7 +1198,7 @@ async function generateRecommendations(){
   const format  = document.getElementById('wizFormat').value;
   const audience= document.getElementById('wizAudience').value;
   const keywords= document.getElementById('wizKeywords').value.trim();
-  if(!topic){document.getElementById('wizTopicInput').focus();alert('Please describe your content idea first!');return}
+  if(!topic){document.getElementById('wizTopicInput').focus();showAlert('Please describe your content idea first!');return}
   if(!channelContext){return}
 
   const btn=document.getElementById('generateBtn');
@@ -1293,7 +1326,7 @@ function initChat(data){
     isOwner?'As the channel owner, I can help you with growth strategies, content ideas, SEO, and more.':'I can help you analyze this channel\'s patterns and compare it with your own.'
   }\n\nWhat would you like to know?`);
   const q=isOwner?[
-    'Why is my engagement rate '+data.engRate+'%?',
+    'Why is my engagement rate '+data.engRate+'?',
     'How do I grow faster in '+data.niche+'?',
     'What title format gets me most views?',
     'What should I post next week?',
@@ -1422,7 +1455,7 @@ function parseJwtPayload(token){
 function handleGoogleIdToken(resp){
   var credential=resp&&resp.credential;
   if(!credential){
-    alert('Google sign-in failed. Missing credential response.');
+    showAlert('Google sign-in failed. Missing credential response.');
     return;
   }
   var pl;
@@ -1430,11 +1463,11 @@ function handleGoogleIdToken(resp){
     pl=parseJwtPayload(credential);
   }catch(e){
     console.error('Google ID token parsing failed:',e);
-    alert('Google sign-in failed. Please try again.');
+    showAlert('Google sign-in failed. Please try again.');
     return;
   }
   if(!pl||!pl.name){
-    alert('Google sign-in failed. Missing profile information.');
+    showAlert('Google sign-in failed. Missing profile information.');
     return;
   }
   var displayName=pl.name;
@@ -1458,14 +1491,14 @@ function requestYTToken(){
     callback:handleYTToken,
     error_callback:function(e){
       logoutGoogle();closeLoginModal();
-      alert('YouTube access was denied. TubeIQ needs YouTube access to detect your channel.');
+      showAlert('YouTube access was denied. TubeIQ needs YouTube access to detect your channel.');
     }
   });
   tc.requestAccessToken({prompt:googleAccessToken?'':'consent'});
 }
 
 async function handleYTToken(tr){
-  if(tr.error){logoutGoogle();closeLoginModal();alert('Could not get YouTube access: '+tr.error);return}
+  if(tr.error){logoutGoogle();closeLoginModal();showAlert('Could not get YouTube access: '+tr.error);return}
   googleAccessToken=tr.access_token;
   document.getElementById('lsMsg').textContent='Fetching your YouTube channel…';
   try{
@@ -1598,7 +1631,7 @@ async function loadCompare(){
     document.getElementById('cmpBody').classList.add('show');
   }catch(e){
     document.getElementById('cmpLoading').classList.remove('show');
-    alert('⚠️ '+e.message);
+    showAlert('⚠️ '+e.message);
   }
   btn.disabled=false;
 }
