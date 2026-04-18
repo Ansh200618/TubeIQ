@@ -722,6 +722,7 @@ const YT_READONLY_SCOPE = 'https://www.googleapis.com/auth/youtube.readonly';
 // Most API keys/client IDs are significantly longer; 20 helps catch empty/placeholder values.
 const MIN_CONFIG_KEY_LENGTH = 20;
 const GOOGLE_CLIENT_ID_RE = /^\d+-[a-z0-9-]+\.apps\.googleusercontent\.com$/i;
+const LOCALHOST_HOSTNAMES = ['localhost','127.0.0.1','::1','[::1]'];
 
 const NICHES = {
   'Entertainment':        {icon:'🎬',tags:['Comedy','Vlogs','Challenges','Shorts','Reacts']},
@@ -765,7 +766,7 @@ function getThemePalette(){
   };
 }
 function isValidGoogleClientId(){
-  return !!(G_CLIENT&&G_CLIENT.length>MIN_CONFIG_KEY_LENGTH&&GOOGLE_CLIENT_ID_RE.test(G_CLIENT));
+  return Boolean(G_CLIENT&&G_CLIENT.length>MIN_CONFIG_KEY_LENGTH&&GOOGLE_CLIENT_ID_RE.test(G_CLIENT));
 }
 function hasConfiguredYouTubeApiKey(){
   return !!(API_KEY&&API_KEY.length>MIN_CONFIG_KEY_LENGTH);
@@ -776,7 +777,7 @@ function hasConfiguredGeminiApiKey(){
 }
 function isSecureAppOrigin(){
   var host=window.location.hostname;
-  return window.location.protocol==='https:'||host==='localhost'||host==='127.0.0.1'||host==='::1'||host==='[::1]';
+  return window.location.protocol==='https:'||LOCALHOST_HOSTNAMES.includes(host);
 }
 function getGoogleSetupError(){
   if(!isValidGoogleClientId())return 'Google OAuth client ID is not configured. Set G_CLIENT in index.html (CONFIG section).';
