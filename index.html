@@ -10,12 +10,12 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="TubeIQ — YouTube Channel Intelligence">
 <meta property="og:description" content="Analyze YouTube channels with real performance insights, trend signals, and AI-assisted content recommendations.">
-<meta property="og:image" content="Logo.png">
+<meta property="og:image" content="https://ytengine.vercel.app/Logo.png">
 <meta property="og:site_name" content="TubeIQ">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="TubeIQ — YouTube Channel Intelligence">
 <meta name="twitter:description" content="Analyze YouTube channels and unlock growth insights with TubeIQ.">
-<meta name="twitter:image" content="Logo.png">
+<meta name="twitter:image" content="https://ytengine.vercel.app/Logo.png">
 <link rel="icon" type="image/png" href="Logo.png">
 <script type="application/ld+json">
 {
@@ -25,7 +25,7 @@
   "applicationCategory": "BusinessApplication",
   "description": "TubeIQ helps creators analyze YouTube channels and discover growth opportunities with analytics and AI-assisted recommendations.",
   "operatingSystem": "Web",
-  "image": "Logo.png"
+  "image": "https://ytengine.vercel.app/Logo.png"
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1495,8 +1495,8 @@ function renderGoogleSignInButton(shouldReRender){
   if(shouldReRender)btnEl.textContent='';
   if(btnEl.hasChildNodes())return;
   var buttonTheme='filled_black';
-  var btnWidth=Math.floor(btnEl.getBoundingClientRect().width||0);
-  if(!btnWidth||btnWidth<180)btnWidth=320;
+  var measuredWidth=Math.floor(btnEl.getBoundingClientRect().width||0);
+  var btnWidth=measuredWidth&&measuredWidth>=180?measuredWidth:320;
   var finalButtonWidth=Math.min(400,btnWidth);
   google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken,auto_select:false,cancel_on_tap_outside:false});
   google.accounts.id.renderButton(btnEl,{theme:buttonTheme,size:'large',width:finalButtonWidth,text:'signin_with',shape:'rectangular'});
