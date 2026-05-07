@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TubeIQ — YouTube Channel Intelligence</title>
+<link rel="icon" type="image/png" href="Logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -58,9 +59,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
   padding:0 40px;height:64px;background:var(--nav-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo img{width:34px;height:34px;object-fit:contain;border-radius:8px}
+.nav-logo-text{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;
   background:linear-gradient(90deg,var(--red) 0%,var(--cyan) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.nav-logo span{color:var(--text);-webkit-text-fill-color:var(--text);opacity:.4}
+.nav-logo-text span{color:var(--text);-webkit-text-fill-color:var(--text);opacity:.4}
 .nav-right{display:flex;align-items:center;gap:12px}
 .theme-select{background:var(--bg2);border:1px solid var(--border);color:var(--text2);border-radius:999px;padding:6px 10px;
   font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;outline:none;cursor:pointer}
@@ -457,7 +460,10 @@ footer a:hover{text-decoration:underline}
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Tube<span>IQ</span></div>
+  <a class="nav-logo" href="#" aria-label="TubeIQ home" onclick="goBack();return false;">
+    <img src="Logo.png" alt="TubeIQ logo">
+    <span class="nav-logo-text">Tube<span>IQ</span></span>
+  </a>
   <div class="nav-right">
     <div class="theme-select">NIGHT</div>
     <div class="nav-badge">REAL-TIME YOUTUBE ANALYTICS</div>

@@ -1,45 +1,54 @@
 # TubeIQ
 
-TubeIQ is a single-page web app for YouTube channel intelligence.  
-It helps you analyze channels, visualize performance signals, and surface actionable insights from channel data.
+TubeIQ is a website that helps you understand YouTube channel performance in a clear, visual way.
 
-## Features
+It is designed for creators and teams who want quick answers, such as:
+- What content is performing best?
+- How consistent is channel growth?
+- What should we improve next?
 
-- Channel-focused analytics dashboard
-- Visual charts and trend indicators
-- Fast, single-file frontend architecture
-- Google Sign-In and YouTube/Gemini API integration
+## What TubeIQ does
 
-## Tech Stack
+- Analyzes public YouTube channel data
+- Shows key metrics in a dashboard
+- Highlights engagement and content patterns
+- Provides AI-assisted recommendations for future videos
 
-- HTML
-- CSS
-- Vanilla JavaScript
-- Chart.js
+## Who this is for
 
-## Project Structure
+- YouTube creators
+- Small media teams
+- Growth and content managers
+- Anyone who wants channel insights without complex analytics tools
+
+## How to use it (simple)
+
+1. Open the website (`index.html`) in your browser.
+2. Enter a YouTube channel ID or handle (example: `@MrBeast`).
+3. Click **Analyze** to view the dashboard.
+4. Optionally sign in with Google to access owner-specific features.
+
+## Project files
 
 ```text
 TubeIQ/
-└── index.html
+├── index.html      # Main website (UI + logic)
+├── Logo.png        # Website logo
+├── privacy.html    # Privacy policy page
+├── terms.html      # Terms of service page
+└── README.md       # Project documentation
 ```
 
-## Getting Started
+## Important note on API keys
 
-1. Clone the repository.
-2. Open `index.html` in your browser.
-3. Configure required API credentials in the app config section if needed.
-
-## Security Note
-
-Do not commit real production credentials.  
-Use environment-specific secrets management for deployment-ready setups.
+TubeIQ currently keeps API configuration in `index.html`.
+For production use, keep real credentials out of public repositories and use secure secret management.
 
 ## Contributing
 
-Contributions are welcome.  
-Please keep changes focused, test manually in-browser, and keep UI/UX consistent with the existing style.
+Contributions are welcome.
+Please keep updates focused, professional, and easy to review.
 
 ## License
 
-Add your preferred license in this repository (for example, MIT) if you plan to distribute this project publicly.
+Add your preferred license (for example, MIT) if you plan to distribute this project publicly.
