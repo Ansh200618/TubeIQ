@@ -4,6 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TubeIQ — YouTube Channel Intelligence</title>
+<meta name="description" content="TubeIQ is a YouTube channel intelligence platform for creators to analyze channel performance, spot growth patterns, and get AI-powered content recommendations.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#070b14">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TubeIQ — YouTube Channel Intelligence">
+<meta property="og:description" content="Analyze YouTube channels with real performance insights, trend signals, and AI-assisted content recommendations.">
+<meta property="og:image" content="https://ytengine.vercel.app/Logo.png">
+<meta property="og:site_name" content="TubeIQ">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TubeIQ — YouTube Channel Intelligence">
+<meta name="twitter:description" content="Analyze YouTube channels and unlock growth insights with TubeIQ.">
+<meta name="twitter:image" content="https://ytengine.vercel.app/Logo.png">
+<link rel="icon" type="image/png" href="Logo.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "TubeIQ",
+  "applicationCategory": "BusinessApplication",
+  "description": "TubeIQ helps creators analyze YouTube channels and discover growth opportunities with analytics and AI-assisted recommendations.",
+  "operatingSystem": "Web",
+  "image": "https://ytengine.vercel.app/Logo.png"
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -58,9 +82,11 @@ body::before{content:'';position:fixed;inset:0;z-index:0;
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;
   padding:0 40px;height:64px;background:var(--nav-bg);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo img{width:34px;height:34px;object-fit:contain;border-radius:8px}
+.nav-logo-text{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;
   background:linear-gradient(90deg,var(--red) 0%,var(--cyan) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.nav-logo span{color:var(--text);-webkit-text-fill-color:var(--text);opacity:.4}
+.nav-logo-text span{color:var(--text);-webkit-text-fill-color:var(--text);opacity:.4}
 .nav-right{display:flex;align-items:center;gap:12px}
 .theme-select{background:var(--bg2);border:1px solid var(--border);color:var(--text2);border-radius:999px;padding:6px 10px;
   font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;outline:none;cursor:pointer}
@@ -345,10 +371,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .modal-perm{display:flex;align-items:center;gap:10px;font-family:'DM Mono',monospace;font-size:12px;color:var(--text2)}
 .modal-perm-icon{width:28px;height:28px;border-radius:8px;background:var(--red-dim);
   display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+#googleSignInBtn{width:100%;max-width:100%;overflow:hidden}
+#googleSignInBtn > div,#googleSignInBtn iframe{max-width:100%!important}
 .modal-note{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.5px;text-align:center;margin-top:16px}
 .modal-close{background:none;border:none;color:var(--muted);cursor:pointer;
   position:absolute;top:20px;right:20px;font-size:20px;transition:color .2s}
 .modal-close:hover{color:var(--text)}
+@media(max-width:560px){
+  .modal-box{padding:28px 18px;width:calc(100% - 24px)}
+  .modal-box h3{font-size:24px}
+}
 /* setup guide inside modal */
 .setup-steps{background:var(--bg3);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px}
 .setup-step{display:flex;gap:10px;margin-bottom:10px;font-size:13px;color:var(--text2);line-height:1.5}
@@ -451,13 +483,19 @@ footer{text-align:center;padding:40px 24px;font-size:12px;color:var(--muted);
 footer span{color:var(--red)}
 footer a{color:var(--cyan);text-decoration:none}
 footer a:hover{text-decoration:underline}
+.footer-brand{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.footer-brand img{width:24px;height:24px;object-fit:contain;border-radius:6px}
+.footer-brand strong{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1.5px;color:var(--text)}
 </style>
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Tube<span>IQ</span></div>
+  <a class="nav-logo" href="#" aria-label="TubeIQ home" onclick="goBack();return false;">
+    <img src="Logo.png" alt="TubeIQ logo">
+    <span class="nav-logo-text">Tube<span>IQ</span></span>
+  </a>
   <div class="nav-right">
     <div class="theme-select">NIGHT</div>
     <div class="nav-badge">REAL-TIME YOUTUBE ANALYTICS</div>
@@ -721,7 +759,13 @@ footer a:hover{text-decoration:underline}
   </div>
 </div>
 
-<footer>TubeIQ · YouTube Channel Intelligence · Built with <span>♥</span> using Gemini AI · YouTube Data API v3 · <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> · <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a></footer>
+<footer>
+  <div class="footer-brand">
+    <img src="Logo.png" alt="TubeIQ logo">
+    <strong>TubeIQ</strong>
+  </div>
+  TubeIQ · YouTube Channel Intelligence · Built with <span>♥</span> using Gemini AI · YouTube Data API v3 · <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a> · <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>
+</footer>
 
 <script>
 
@@ -1451,8 +1495,11 @@ function renderGoogleSignInButton(shouldReRender){
   if(shouldReRender)btnEl.textContent='';
   if(btnEl.hasChildNodes())return;
   var buttonTheme='filled_black';
+  var measuredWidth=Math.floor(btnEl.getBoundingClientRect().width||0);
+  var btnWidth=measuredWidth&&measuredWidth>=180?measuredWidth:320;
+  var finalButtonWidth=Math.min(400,btnWidth);
   google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken,auto_select:false,cancel_on_tap_outside:false});
-  google.accounts.id.renderButton(btnEl,{theme:buttonTheme,size:'large',width:400,text:'signin_with',shape:'rectangular'});
+  google.accounts.id.renderButton(btnEl,{theme:buttonTheme,size:'large',width:finalButtonWidth,text:'signin_with',shape:'rectangular'});
 }
 
 function parseJwtPayload(token){
@@ -1559,6 +1606,10 @@ function logoutGoogle(){
 window.addEventListener('load',function(){
   initThemeMode();
   if(window.google&&G_CLIENT)google.accounts.id.initialize({client_id:G_CLIENT,callback:handleGoogleIdToken});
+});
+window.addEventListener('resize',function(){
+  var modal=document.getElementById('loginModal');
+  if(modal&&modal.classList.contains('open'))renderGoogleSignInButton(true);
 });
 
 /* ════════════════════════════════
