@@ -5,49 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TubeIQ Terms of Service</title>
   <link rel="icon" type="image/png" href="Logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body{font-family:Arial,sans-serif;line-height:1.6;max-width:900px;margin:40px auto;padding:0 20px;color:#111}
-    .brand{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    :root{
+      --bg:#070b14;--bg2:#0d1220;--bg3:#111827;--border:rgba(255,255,255,0.08);
+      --text:#e2e8f0;--text2:#8892a4;--red:#ff2d2d;--cyan:#00d4ff;--muted:#4a5568;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7}
+    nav{position:sticky;top:0;z-index:10;height:64px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;background:rgba(7,11,20,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
     .brand img{width:34px;height:34px;object-fit:contain;border-radius:8px}
-    .brand-name{font-size:20px;font-weight:700;letter-spacing:.5px}
-    h1,h2{line-height:1.3}
+    .brand-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;
+      background:linear-gradient(90deg,var(--red),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .brand-name span{color:var(--text);-webkit-text-fill-color:var(--text);opacity:.4}
+    .back-link{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);text-decoration:none;border:1px solid var(--border);
+      border-radius:999px;padding:6px 12px}
+    .wrap{max-width:920px;margin:0 auto;padding:32px 20px 56px}
+    .card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:28px}
+    .eyebrow{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--red);margin-bottom:10px}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:46px;letter-spacing:1px;line-height:1;margin-bottom:10px}
+    .updated{font-family:'DM Mono',monospace;font-size:12px;color:var(--text2);margin-bottom:22px}
+    h2{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.8px;margin:24px 0 8px}
+    p{color:var(--text2);font-size:15px}
+    strong{color:var(--text)}
+    footer{text-align:center;padding:0 20px 30px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px}
+    @media(max-width:560px){h1{font-size:38px}.card{padding:22px}}
   </style>
 </head>
 <body>
-  <div class="brand">
-    <img src="Logo.png" alt="TubeIQ logo">
-    <div class="brand-name">TubeIQ</div>
-  </div>
-  <h1>Terms of Service</h1>
-  <p><strong>Last updated:</strong> April 18, 2026</p>
+  <nav>
+    <a class="brand" href="index.html" aria-label="Back to TubeIQ home">
+      <img src="Logo.png" alt="TubeIQ logo">
+      <div class="brand-name">Tube<span>IQ</span></div>
+    </a>
+    <a class="back-link" href="index.html">← HOME</a>
+  </nav>
+  <main class="wrap">
+    <section class="card">
+      <div class="eyebrow">LEGAL · TERMS</div>
+      <h1>Terms of Service</h1>
+      <p class="updated"><strong>Last updated:</strong> April 18, 2026</p>
 
-  <p>By using TubeIQ, you agree to these Terms of Service.</p>
+      <p>By using TubeIQ, you agree to these Terms of Service.</p>
 
-  <h2>Use of Service</h2>
-  <p>TubeIQ provides analytics and insight tools for YouTube channels. You agree to use TubeIQ in compliance with all applicable laws and platform policies.</p>
+      <h2>Use of Service</h2>
+      <p>TubeIQ provides analytics and insight tools for YouTube channels. You agree to use TubeIQ in compliance with all applicable laws and platform policies.</p>
 
-  <h2>Google and YouTube Access</h2>
-  <p>If you connect a Google account, TubeIQ may access read-only YouTube data to provide analytics features. TubeIQ does not perform channel management actions on your behalf.</p>
+      <h2>Google and YouTube Access</h2>
+      <p>If you connect a Google account, TubeIQ may access read-only YouTube data to provide analytics features. TubeIQ does not perform channel management actions on your behalf.</p>
 
-  <h2>User Responsibilities</h2>
-  <p>You are responsible for the accuracy of information you provide and for maintaining the security of accounts you use with TubeIQ.</p>
+      <h2>User Responsibilities</h2>
+      <p>You are responsible for the accuracy of information you provide and for maintaining the security of accounts you use with TubeIQ.</p>
 
-  <h2>Intellectual Property</h2>
-  <p>The TubeIQ application, branding, and related materials are owned by their respective owners. You may not copy or redistribute protected content without permission.</p>
+      <h2>Intellectual Property</h2>
+      <p>The TubeIQ application, branding, and related materials are owned by their respective owners. You may not copy or redistribute protected content without permission.</p>
 
-  <h2>Disclaimer</h2>
-  <p>TubeIQ is provided on an “as is” and “as available” basis, without warranties of any kind. We do not guarantee uninterrupted availability or specific business outcomes from analytics insights.</p>
+      <h2>Disclaimer</h2>
+      <p>TubeIQ is provided on an “as is” and “as available” basis, without warranties of any kind. We do not guarantee uninterrupted availability or specific business outcomes from analytics insights.</p>
 
-  <h2>Limitation of Liability</h2>
-  <p>To the fullest extent permitted by law, TubeIQ and its maintainers are not liable for indirect, incidental, special, consequential, or punitive damages arising from your use of the service.</p>
+      <h2>Limitation of Liability</h2>
+      <p>To the fullest extent permitted by law, TubeIQ and its maintainers are not liable for indirect, incidental, special, consequential, or punitive damages arising from your use of the service.</p>
 
-  <h2>Termination</h2>
-  <p>We may suspend or terminate access to TubeIQ for misuse, abuse, or violations of these terms.</p>
+      <h2>Termination</h2>
+      <p>We may suspend or terminate access to TubeIQ for misuse, abuse, or violations of these terms.</p>
 
-  <h2>Changes to Terms</h2>
-  <p>We may update these Terms of Service from time to time. Continued use of TubeIQ after updates means you accept the revised terms.</p>
+      <h2>Changes to Terms</h2>
+      <p>We may update these Terms of Service from time to time. Continued use of TubeIQ after updates means you accept the revised terms.</p>
 
-  <h2>Contact</h2>
-  <p>For questions about these terms, contact the TubeIQ project maintainer.</p>
+      <h2>Contact</h2>
+      <p>For questions about these terms, contact the TubeIQ project maintainer.</p>
+    </section>
+  </main>
+  <footer>TubeIQ · Terms of Service</footer>
 </body>
 </html>
