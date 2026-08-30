@@ -52,3 +52,10 @@ Please keep updates focused, professional, and easy to review.
 ## License
 
 Add your preferred license (for example, MIT) if you plan to distribute this project publicly.
+
+## Support Development
+
+This project is free and open source. If you find it useful, you can support continued development through:
+
+- [GitHub Sponsors](https://github.com/sponsors/anshdeepofficial)
+- [Buy Me a Coffee](https://buymeacoffee.com/anshdeepofficial)
